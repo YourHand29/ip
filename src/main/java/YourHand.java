@@ -19,6 +19,9 @@ public class YourHand {
         System.out.println(SEPARATOR);
 
         Scanner scanner = new Scanner(System.in);
+        String[] tasks = new String[100];
+        int numberOfTasks = 0;
+
         while (true) {
             String command = scanner.nextLine();
             System.out.println(SEPARATOR);
@@ -29,7 +32,16 @@ public class YourHand {
                 break;
             }
 
-            System.out.println(" " + command);
+            if (command.equals("list")) {
+                for (int i = 0; i < numberOfTasks; i++) {
+                    System.out.println(" " + (i + 1) + ". " + tasks[i]);
+                }
+            } else if (numberOfTasks < tasks.length) {
+                tasks[numberOfTasks] = command;
+                numberOfTasks++;
+                System.out.println(" added: " + command);
+            }
+
             System.out.println(SEPARATOR);
         }
     }
