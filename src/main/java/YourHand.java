@@ -19,7 +19,7 @@ public class YourHand {
         System.out.println(SEPARATOR);
 
         Scanner scanner = new Scanner(System.in);
-        String[] tasks = new String[100];
+        Task[] tasks = new Task[100];
         int numberOfTasks = 0;
 
         while (true) {
@@ -33,11 +33,25 @@ public class YourHand {
             }
 
             if (command.equals("list")) {
+                System.out.println(" Here are the tasks in your list:");
                 for (int i = 0; i < numberOfTasks; i++) {
-                    System.out.println(" " + (i + 1) + ". " + tasks[i]);
+                    System.out.println(" " + (i + 1) + ".[" + tasks[i].getStatusIcon() + "] "
+                            + tasks[i].getDescription());
                 }
+            } else if (command.startsWith("mark ")) {
+                int taskNumber = Integer.parseInt(command.substring(5));
+                Task task = tasks[taskNumber - 1];
+                task.markAsDone();
+                System.out.println(" Good job for surviving, I'll mark this as done:");
+                System.out.println("   [" + task.getStatusIcon() + "] " + task.getDescription());
+            } else if (command.startsWith("unmark ")) {
+                int taskNumber = Integer.parseInt(command.substring(7));
+                Task task = tasks[taskNumber - 1];
+                task.unmark();
+                System.out.println(" Unmarked. Check pls:");
+                System.out.println("   [" + task.getStatusIcon() + "] " + task.getDescription());
             } else if (numberOfTasks < tasks.length) {
-                tasks[numberOfTasks] = command;
+                tasks[numberOfTasks] = new Task(command);
                 numberOfTasks++;
                 System.out.println(" added: " + command);
             }
