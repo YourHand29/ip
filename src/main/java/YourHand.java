@@ -1,13 +1,40 @@
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
- * A command-line chatbot that echoes user commands until asked to exit.
+ * A command-line chatbot that manages to-dos, deadlines, and events.
  */
 public class YourHand {
     private static final String SEPARATOR = "____________________________________________________________";
-    private static final int MAX_TASKS = 100;
+    private static final Pattern TODO_PATTERN = Pattern.compile("^todo(?:\\s+(.*))?$");
+    private static final Pattern DEADLINE_PATTERN = Pattern.compile("^deadline\\s+(.+?)\\s+/by\\s+(.+)$");
+    private static final Pattern EVENT_PATTERN = Pattern.compile(
+            "^event\\s+(.+?)\\s+/from\\s+(.+?)\\s+/to\\s+(.+)$");
+    private static final Pattern STATUS_PATTERN = Pattern.compile("^(mark|unmark)(?:\\s+(.+))?$");
 
     public static void main(String[] args) {
+        printWelcomeMessage();
+
+        Scanner scanner = new Scanner(System.in);
+        TaskList taskList = new TaskList();
+        while (scanner.hasNextLine()) {
+            String command = scanner.nextLine().trim();
+            System.out.println(SEPARATOR);
+            try {
+                if (handleCommand(command, taskList)) {
+                    System.out.println(SEPARATOR);
+                    break;
+                }
+            } catch (YourHandException exception) {
+                System.out.println(" " + exception.getMessage());
+            }
+            System.out.println(SEPARATOR);
+        }
+    }
+
+    /** Prints the chatbot banner and initial greeting. */
+    private static void printWelcomeMessage() {
         String banner = "__   __                 _   _                 _\n"
                 + "\\ \\ / /__  _   _ _ __  | | | | __ _ _ __   __| |\n"
                 + " \\ V / _ \\| | | | '__| | |_| |/ _` | '_ \\ / _` |\n"
@@ -18,150 +45,112 @@ public class YourHand {
         System.out.println(" Selamat Datang 早上好! YourHand 为你服务");
         System.out.println(" 你来这干嘛 What are you here for?");
         System.out.println(SEPARATOR);
-
-        Scanner scanner = new Scanner(System.in);
-        Task[] tasks = new Task[MAX_TASKS];
-        int numberOfTasks = 0;
-
-        while (scanner.hasNextLine()) {
-            String command = scanner.nextLine().trim();
-            System.out.println(SEPARATOR);
-
-            if (command.equals("bye")) {
-                System.out.println(" See you never :)");
-                System.out.println(SEPARATOR);
-                break;
-            }
-
-            if (command.equals("list")) {
-                printTaskList(tasks, numberOfTasks);
-            } else if (command.startsWith("mark ")) {
-                updateTaskStatus(command, "mark ", tasks, numberOfTasks, true);
-            } else if (command.startsWith("unmark ")) {
-                updateTaskStatus(command, "unmark ", tasks, numberOfTasks, false);
-            } else {
-                Task task = createTask(command);
-                if (task != null) {
-                    numberOfTasks = addTask(task, tasks, numberOfTasks);
-                }
-            }
-
-            System.out.println(SEPARATOR);
-        }
     }
 
-    /** Prints every task currently stored in the list. */
-    private static void printTaskList(Task[] tasks, int numberOfTasks) {
-        if (numberOfTasks == 0) {
+    /**
+     * Handles one command and returns whether the application should exit.
+     *
+     * @param command user-entered command
+     * @param taskList task storage for this session
+     * @return true when the command is {@code bye}
+     * @throws YourHandException if the command is invalid
+     */
+    private static boolean handleCommand(String command, TaskList taskList) throws YourHandException {
+        if (command.equals("bye")) {
+            System.out.println(" See you never :)");
+            return true;
+        }
+        if (command.equals("list")) {
+            printTaskList(taskList);
+            return false;
+        }
+
+        Matcher statusMatcher = STATUS_PATTERN.matcher(command);
+        if (statusMatcher.matches()) {
+            updateTaskStatus(statusMatcher, taskList);
+            return false;
+        }
+
+        Task task = createTask(command);
+        taskList.add(task);
+        System.out.println(" Fine, I've written this down:");
+        System.out.println("   " + task);
+        String taskWord = taskList.size() == 1 ? "task" : "tasks";
+        System.out.println(" That's " + taskList.size() + " " + taskWord + " on your plate.");
+        return false;
+    }
+
+    /** Prints all stored tasks, or an empty-list message. */
+    private static void printTaskList(TaskList taskList) throws YourHandException {
+        if (taskList.isEmpty()) {
             System.out.println(" Your task list is empty.");
             return;
         }
 
-        System.out.println(" Here are the tasks in your list:");
-        for (int i = 0; i < numberOfTasks; i++) {
-            System.out.println(" " + (i + 1) + "." + tasks[i]);
+        System.out.println(" Here's your list of responsibilities:");
+        for (int taskNumber = 1; taskNumber <= taskList.size(); taskNumber++) {
+            System.out.println(" " + taskNumber + "." + taskList.getTask(taskNumber));
         }
     }
 
-    /** Updates the completion status of the numbered task. */
-    private static void updateTaskStatus(String command, String prefix, Task[] tasks,
-                                         int numberOfTasks, boolean isDone) {
-        String taskNumberText = command.substring(prefix.length()).trim();
+    /** Updates a task's completion status from a validated mark or unmark command. */
+    private static void updateTaskStatus(Matcher matcher, TaskList taskList) throws YourHandException {
+        String taskNumberText = matcher.group(2);
+        if (taskNumberText == null || taskNumberText.isBlank()) {
+            throw new YourHandException("Don't make me guess — give me a task number, e.g. "
+                    + matcher.group(1) + " 2.");
+        }
+
+        int taskNumber;
         try {
-            int taskNumber = Integer.parseInt(taskNumberText);
-            if (taskNumber < 1 || taskNumber > numberOfTasks) {
-                System.out.println(" Please provide a task number from 1 to " + numberOfTasks + ".");
-                return;
-            }
-
-            Task task = tasks[taskNumber - 1];
-            if (isDone) {
-                task.markAsDone();
-                System.out.println(" Nice! I've marked this task as done:");
-            } else {
-                task.markAsUndone();
-                System.out.println(" OK, I've marked this task as not done yet:");
-            }
-            System.out.println("   " + task);
+            taskNumber = Integer.parseInt(taskNumberText.trim());
         } catch (NumberFormatException exception) {
-            System.out.println(" Please provide a valid task number.");
-        }
-    }
-
-    /** Creates a task from a valid task-creation command, or reports invalid input. */
-    private static Task createTask(String command) {
-        if (command.startsWith("todo ")) {
-            return createToDo(command.substring(5).trim());
-        }
-        if (command.startsWith("deadline ")) {
-            return createDeadline(command);
-        }
-        if (command.startsWith("event ")) {
-            return createEvent(command);
+            throw new YourHandException("Task numbers are whole numbers, not creative writing.");
         }
 
-        System.out.println(" I don't understand that command.");
-        return null;
-    }
-
-    /** Creates a to-do when it has a description. */
-    private static Task createToDo(String description) {
-        if (description.isEmpty()) {
-            System.out.println(" A to-do needs a description.");
-            return null;
+        Task task = taskList.getTask(taskNumber);
+        if (matcher.group(1).equals("mark")) {
+            task.markAsDone();
+            System.out.println(" Good job for surviving. I'll mark this as done:");
+        } else {
+            task.markAsUndone();
+            System.out.println(" Unmarked. Check pls:");
         }
-        return new ToDo(description);
-    }
-
-    /** Creates a deadline when its description and by-time are present. */
-    private static Task createDeadline(String command) {
-        int byIndex = command.indexOf(" /by ");
-        if (byIndex == -1) {
-            System.out.println(" Use: deadline DESCRIPTION /by DATE_OR_TIME");
-            return null;
-        }
-
-        String description = command.substring(9, byIndex).trim();
-        String by = command.substring(byIndex + 5).trim();
-        if (description.isEmpty() || by.isEmpty()) {
-            System.out.println(" A deadline needs both a description and a by-time.");
-            return null;
-        }
-        return new Deadline(description, by);
-    }
-
-    /** Creates an event when its description, start, and end are present. */
-    private static Task createEvent(String command) {
-        int fromIndex = command.indexOf(" /from ");
-        int toIndex = command.indexOf(" /to ");
-        if (fromIndex == -1 || toIndex == -1 || toIndex <= fromIndex) {
-            System.out.println(" Use: event DESCRIPTION /from START /to END");
-            return null;
-        }
-
-        String description = command.substring(6, fromIndex).trim();
-        String from = command.substring(fromIndex + 7, toIndex).trim();
-        String to = command.substring(toIndex + 5).trim();
-        if (description.isEmpty() || from.isEmpty() || to.isEmpty()) {
-            System.out.println(" An event needs a description, start time, and end time.");
-            return null;
-        }
-        return new Event(description, from, to);
-    }
-
-    /** Adds a task when the fixed-size task list has capacity. */
-    private static int addTask(Task task, Task[] tasks, int numberOfTasks) {
-        if (numberOfTasks == MAX_TASKS) {
-            System.out.println(" Your task list is full.");
-            return numberOfTasks;
-        }
-
-        tasks[numberOfTasks] = task;
-        System.out.println(" Got it. I've added this task:");
         System.out.println("   " + task);
-        numberOfTasks++;
-        String taskWord = numberOfTasks == 1 ? "task" : "tasks";
-        System.out.println(" Now you have " + numberOfTasks + " " + taskWord + " in the list.");
-        return numberOfTasks;
+    }
+
+    /** Creates a task from a task-creation command. */
+    private static Task createTask(String command) throws YourHandException {
+        Matcher todoMatcher = TODO_PATTERN.matcher(command);
+        if (todoMatcher.matches()) {
+            String description = todoMatcher.group(1);
+            if (description == null || description.isBlank()) {
+                throw new YourHandException("You handed me an empty to-do. Try: todo borrow book");
+            }
+            return new ToDo(description.trim());
+        }
+
+        Matcher deadlineMatcher = DEADLINE_PATTERN.matcher(command);
+        if (deadlineMatcher.matches()) {
+            return new Deadline(deadlineMatcher.group(1).trim(), deadlineMatcher.group(2).trim());
+        }
+        if (isCommand(command, "deadline")) {
+            throw new YourHandException("I need a deadline date too. Try: deadline DESCRIPTION /by DATE_OR_TIME");
+        }
+
+        Matcher eventMatcher = EVENT_PATTERN.matcher(command);
+        if (eventMatcher.matches()) {
+            return new Event(eventMatcher.group(1).trim(), eventMatcher.group(2).trim(), eventMatcher.group(3).trim());
+        }
+        if (isCommand(command, "event")) {
+            throw new YourHandException("I need both ends of the event. Try: event DESCRIPTION /from START /to END");
+        }
+
+        throw new YourHandException("Hmm, I don't speak that yet. Try todo, deadline, event, list, mark, unmark, or bye.");
+    }
+
+    /** Returns whether a command begins with a command word. */
+    private static boolean isCommand(String command, String commandWord) {
+        return command.equals(commandWord) || command.startsWith(commandWord + " ");
     }
 }
