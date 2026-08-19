@@ -2,8 +2,8 @@
  * Represents a task and whether it has been completed.
  */
 public class Task {
-    protected String description;
-    protected boolean isDone;
+    private final String description;
+    private boolean isDone;
 
     /**
      * Creates an incomplete task with the given description.
@@ -30,16 +30,13 @@ public class Task {
     }
 
     /** Marks this task as not done. */
-    public void unmark() {
+    public void markAsUndone() {
         isDone = false;
     }
 
-    /**
-     * Returns this task's description.
-     *
-     * @return the task description
-     */
-    public String getDescription() {
-        return description;
+    /** Returns the task's display text, including its completion status. */
+    @Override
+    public String toString() {
+        return "[" + this.getStatusIcon() + "] " + this.description;
     }
 }
