@@ -1,17 +1,20 @@
 /**
  * Represents a task and whether it has been completed.
  */
-public class Task {
+public abstract class Task {
     private final String description;
+    private final TaskType taskType;
     private boolean isDone;
 
     /**
      * Creates an incomplete task with the given description.
      *
      * @param description Text describing the task.
+     * @param taskType Category of the task.
      */
-    public Task(String description) {
+    protected Task(String description, TaskType taskType) {
         this.description = description;
+        this.taskType = taskType;
         this.isDone = false;
     }
 
@@ -53,6 +56,6 @@ public class Task {
     /** Returns the task's display text, including its completion status. */
     @Override
     public String toString() {
-        return "[" + getStatusIcon() + "] " + description;
+        return "[" + taskType.getIcon() + "][" + getStatusIcon() + "] " + description;
     }
 }

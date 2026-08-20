@@ -11,13 +11,13 @@ public class Deadline extends Task {
      * @param by Due date or time text.
      */
     public Deadline(String description, String by) {
-        super(description);
+        super(description, TaskType.DEADLINE);
         this.by = by;
     }
 
     /** Returns this deadline's display text, including its due date or time. */
     @Override
     public String toString() {
-        return "[D]" + super.toString() + " (by: " + by + ")";
+        return super.toString() + " (by: " + by + ")";
     }
 }
