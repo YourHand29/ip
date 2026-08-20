@@ -86,7 +86,7 @@ ____________________________________________________________
  你来这干嘛 What are you here for?
 ____________________________________________________________
 ____________________________________________________________
- I need a deadline date too. Try: deadline DESCRIPTION /by DATE_OR_TIME
+ Bro due when please. Try: deadline DESCRIPTION /by DATE_OR_TIME
 ____________________________________________________________
 ____________________________________________________________
  Brother I free how delete stuff. Add one before I can even delete.
@@ -109,7 +109,7 @@ ____________________________________________________________
  你来这干嘛 What are you here for?
 ____________________________________________________________
 ____________________________________________________________
- I need a deadline date too. Try: deadline DESCRIPTION /by DATE_OR_TIME
+ Bro due when please. Try: deadline DESCRIPTION /by DATE_OR_TIME
 ____________________________________________________________
 ____________________________________________________________
  Brother I free how delete stuff. Add one before I can even delete.
@@ -312,7 +312,7 @@ ____________________________________________________________
  That's 1 task on your plate.
 ____________________________________________________________
 ____________________________________________________________
- I need both ends of the event. Try: event DESCRIPTION /from START /to END
+ Walao when the even happening. Try: event DESCRIPTION /from START /to END
 ____________________________________________________________
 ____________________________________________________________
  Here's your list of responsibilities:
@@ -341,7 +341,7 @@ ____________________________________________________________
  That's 1 task on your plate.
 ____________________________________________________________
 ____________________________________________________________
- I need both ends of the event. Try: event DESCRIPTION /from START /to END
+ Walao when the even happening. Try: event DESCRIPTION /from START /to END
 ____________________________________________________________
 ____________________________________________________________
  Here's your list of responsibilities:

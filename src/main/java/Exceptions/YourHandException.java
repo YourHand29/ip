@@ -1,3 +1,5 @@
+package exceptions;
+
 /**
  * Represents an error caused by invalid user input in YourHand.
  */

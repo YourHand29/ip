@@ -1,7 +1,7 @@
 # UI Test Plan
 
 run-command: java -cp _temp/ui-test-classes YourHand
-setup-command: javac -d _temp/ui-test-classes src/main/java/*.java
+setup-command: javac -d _temp/ui-test-classes src/main/java/YourHand.java src/main/java/tasks/*.java src/main/java/exceptions/*.java
 working-directory: ..
 timeout-seconds: 10
 
@@ -69,7 +69,7 @@ ____________________________________________________________
  你来这干嘛 What are you here for?
 ____________________________________________________________
 ____________________________________________________________
- I need a deadline date too. Try: deadline DESCRIPTION /by DATE_OR_TIME
+ Bro due when please. Try: deadline DESCRIPTION /by DATE_OR_TIME
 ____________________________________________________________
 ____________________________________________________________
  Brother I free how delete stuff. Add one before I can even delete.
@@ -206,7 +206,7 @@ ____________________________________________________________
  That's 1 task on your plate.
 ____________________________________________________________
 ____________________________________________________________
- I need both ends of the event. Try: event DESCRIPTION /from START /to END
+ Walao when the even happening. Try: event DESCRIPTION /from START /to END
 ____________________________________________________________
 ____________________________________________________________
  Here's your list of responsibilities:

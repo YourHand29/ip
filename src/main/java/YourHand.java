@@ -1,3 +1,10 @@
+import exceptions.YourHandException;
+import tasks.Deadline;
+import tasks.Event;
+import tasks.Task;
+import tasks.TaskList;
+import tasks.Todo;
+
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -174,7 +181,7 @@ public class YourHand {
             return new Deadline(deadlineMatcher.group(1).trim(), deadlineMatcher.group(2).trim());
         }
         if (isCommand(command, "deadline")) {
-            throw new YourHandException("I need a deadline date too. Try: deadline DESCRIPTION /by DATE_OR_TIME");
+            throw new YourHandException("Bro due when please. Try: deadline DESCRIPTION /by DATE_OR_TIME");
         }
 
         Matcher eventMatcher = EVENT_PATTERN.matcher(command);
@@ -182,7 +189,7 @@ public class YourHand {
             return new Event(eventMatcher.group(1).trim(), eventMatcher.group(2).trim(), eventMatcher.group(3).trim());
         }
         if (isCommand(command, "event")) {
-            throw new YourHandException("I need both ends of the event. Try: event DESCRIPTION /from START /to END");
+            throw new YourHandException("Walao when the even happening. Try: event DESCRIPTION /from START /to END");
         }
 
         throw new YourHandException("Hmm, I don't speak that yet. Try todo, deadline, event, list, mark, "

@@ -13,7 +13,7 @@ Set a `run-command` and, if compilation or setup is needed, a `setup-command`. A
 
 ````markdown
 run-command: java -cp _temp/ui-test-classes YourHand
-setup-command: javac -d _temp/ui-test-classes src/main/java/Task.java src/main/java/ToDo.java src/main/java/Deadline.java src/main/java/Event.java src/main/java/YourHand.java
+setup-command: javac -d _temp/ui-test-classes src/main/java/Tasks.Task.java src/main/java/ToDo.java src/main/java/Tasks.Deadline.java src/main/java/Tasks.Event.java src/main/java/YourHand.java
 working-directory: .
 timeout-seconds: 10
 
