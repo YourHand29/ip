@@ -1,13 +1,17 @@
-public class ToDo extends Task {
+/**
+ * Represents a task without an associated date or time.
+ */
+public class Todo extends Task {
     /**
      * Creates an incomplete task with the given description.
      *
-     * @param description text describing the task
+     * @param description Text describing the task.
      */
-    public ToDo(String description) {
+    public Todo(String description) {
         super(description);
     }
 
+    /** Returns this to-do's display text. */
     @Override
     public String toString() {
         return "[T]" + super.toString();

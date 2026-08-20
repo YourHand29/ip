@@ -1,58 +1,70 @@
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Stores the tasks managed during one YourHand session.
  */
 public class TaskList {
-    private static final int MAX_TASKS = 100;
-
-    private final Task[] tasks = new Task[MAX_TASKS];
-    private int size;
+    private final List<Task> tasks = new ArrayList<>();
 
     /**
      * Adds a task to the list.
      *
-     * @param task task to store
-     * @throws YourHandException if the list already contains 100 tasks
+     * @param task Task to store.
      */
-    public void add(Task task) throws YourHandException {
-        if (size == MAX_TASKS) {
-            throw new YourHandException("My brain is full. Please remove a task before adding another.");
-        }
-        tasks[size] = task;
-        size++;
+    public void add(Task task) {
+        tasks.add(task);
     }
 
     /**
      * Returns a task using the one-based number shown to the user.
      *
-     * @param taskNumber one-based task number
-     * @return the requested task
-     * @throws YourHandException if the task number is outside the current list
+     * @param taskNumber One-based task number.
+     * @return The requested task.
+     * @throws YourHandException If the task number is outside the current list.
      */
     public Task getTask(int taskNumber) throws YourHandException {
-        if (size == 0) {
-            throw new YourHandException("I have no tasks to work with yet. Add one before using its number.");
+        validateTaskNumber(taskNumber);
+        return tasks.get(taskNumber - 1);
+    }
+
+    /**
+     * Removes and returns a task using the one-based number shown to the user.
+     *
+     * @param taskNumber One-based task number.
+     * @return The removed task.
+     * @throws YourHandException If the task number is outside the current list.
+     */
+    public Task removeTask(int taskNumber) throws YourHandException {
+        validateTaskNumber(taskNumber);
+        return tasks.remove(taskNumber - 1);
+    }
+
+    /** Checks whether a one-based task number refers to a stored task. */
+    private void validateTaskNumber(int taskNumber) throws YourHandException {
+        if (tasks.isEmpty()) {
+            throw new YourHandException("Brother I free how delete stuff. Add one before I can even delete.");
         }
-        if (taskNumber < 1 || taskNumber > size) {
-            throw new YourHandException("Pick a task number from 1 to " + size + ".");
+        if (taskNumber < 1 || taskNumber > tasks.size()) {
+            throw new YourHandException("Pick a task number from 1 to " + tasks.size() + ".");
         }
-        return tasks[taskNumber - 1];
     }
 
     /**
      * Returns the number of tasks in the list.
      *
-     * @return the current task count
+     * @return The current task count.
      */
     public int size() {
-        return size;
+        return tasks.size();
     }
 
     /**
      * Returns whether the list has no tasks.
      *
-     * @return true if there are no tasks
+     * @return True if there are no tasks.
      */
     public boolean isEmpty() {
-        return size == 0;
+        return tasks.isEmpty();
     }
 }

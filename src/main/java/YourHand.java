@@ -12,7 +12,13 @@ public class YourHand {
     private static final Pattern EVENT_PATTERN = Pattern.compile(
             "^event\\s+(.+?)\\s+/from\\s+(.+?)\\s+/to\\s+(.+)$");
     private static final Pattern STATUS_PATTERN = Pattern.compile("^(mark|unmark)(?:\\s+(.+))?$");
+    private static final Pattern DELETE_PATTERN = Pattern.compile("^delete(?:\\s+(.+))?$");
 
+    /**
+     * Starts the YourHand command-line application.
+     *
+     * @param args Command-line arguments, which are not used.
+     */
     public static void main(String[] args) {
         printWelcomeMessage();
 
@@ -71,6 +77,12 @@ public class YourHand {
             return false;
         }
 
+        Matcher deleteMatcher = DELETE_PATTERN.matcher(command);
+        if (deleteMatcher.matches()) {
+            deleteTask(deleteMatcher, taskList);
+            return false;
+        }
+
         Task task = createTask(command);
         taskList.add(task);
         System.out.println(" Fine, I've written this down:");
@@ -110,13 +122,40 @@ public class YourHand {
 
         Task task = taskList.getTask(taskNumber);
         if (matcher.group(1).equals("mark")) {
-            task.markAsDone();
-            System.out.println(" Good job for surviving. I'll mark this as done:");
+            if (task.markAsDone()) {
+                System.out.println(" Good job for surviving. I'll mark this as done:");
+            } else {
+                System.out.println(" That task was already done. Double-checking never hurts:");
+            }
         } else {
-            task.markAsUndone();
-            System.out.println(" Unmarked. Check pls:");
+            if (task.markAsUndone()) {
+                System.out.println(" Unmarked. Check pls:");
+            } else {
+                System.out.println(" That task was already waiting for you. No change:");
+            }
         }
         System.out.println("   " + task);
+    }
+
+    /** Removes the task specified by a validated delete command. */
+    private static void deleteTask(Matcher matcher, TaskList taskList) throws YourHandException {
+        String taskNumberText = matcher.group(1);
+        if (taskNumberText == null || taskNumberText.isBlank()) {
+            throw new YourHandException("Don't make me guess — give me a task number, e.g. delete 2.");
+        }
+
+        int taskNumber;
+        try {
+            taskNumber = Integer.parseInt(taskNumberText.trim());
+        } catch (NumberFormatException exception) {
+            throw new YourHandException("Task numbers are whole numbers, not creative writing.");
+        }
+
+        Task removedTask = taskList.removeTask(taskNumber);
+        System.out.println(" Poof. I've removed this task:");
+        System.out.println("   " + removedTask);
+        String taskWord = taskList.size() == 1 ? "task" : "tasks";
+        System.out.println(" That's " + taskList.size() + " " + taskWord + " left on your plate.");
     }
 
     /** Creates a task from a task-creation command. */
@@ -127,7 +166,7 @@ public class YourHand {
             if (description == null || description.isBlank()) {
                 throw new YourHandException("You handed me an empty to-do. Try: todo borrow book");
             }
-            return new ToDo(description.trim());
+            return new Todo(description.trim());
         }
 
         Matcher deadlineMatcher = DEADLINE_PATTERN.matcher(command);
@@ -146,7 +185,8 @@ public class YourHand {
             throw new YourHandException("I need both ends of the event. Try: event DESCRIPTION /from START /to END");
         }
 
-        throw new YourHandException("Hmm, I don't speak that yet. Try todo, deadline, event, list, mark, unmark, or bye.");
+        throw new YourHandException("Hmm, I don't speak that yet. Try todo, deadline, event, list, mark, "
+                + "unmark, delete, or bye.");
     }
 
     /** Returns whether a command begins with a command word. */

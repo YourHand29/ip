@@ -5,7 +5,7 @@ public class YourHandException extends Exception {
     /**
      * Creates an exception with a message suitable for display to the user.
      *
-     * @param message explanation of the invalid input and how to correct it
+     * @param message Explanation of the invalid input and how to correct it.
      */
     public YourHandException(String message) {
         super(message);
