@@ -16,6 +16,7 @@ run-command: java -cp _temp/ui-test-classes YourHand
 setup-command: javac -d _temp/ui-test-classes src/main/java/Tasks.Task.java src/main/java/ToDo.java src/main/java/Tasks.Deadline.java src/main/java/Tasks.Event.java src/main/java/YourHand.java
 working-directory: .
 timeout-seconds: 10
+before-each-command: optional shell command run before each test
 
 ## Test case: List an empty task list
 
@@ -38,6 +39,8 @@ bye
 ````
 
 `working-directory` is relative to the plan file. The runner normalizes Windows and Unix line endings and ignores only final line-ending differences; all other output must match exactly.
+
+To prepare a specific test, add an optional `### Setup` section before `### Input` containing one fenced shell-command block. The runner executes it after `before-each-command` and before launching the chatbot.
 
 ## Run and report
 

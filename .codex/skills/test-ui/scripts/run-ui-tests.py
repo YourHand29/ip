@@ -11,9 +11,9 @@ from pathlib import Path
 
 
 TEST_HEADING = re.compile(r"^## Test case:\s*(.+?)\s*$", re.MULTILINE)
-SECTION_HEADING = re.compile(r"^### (Aim|Input|Expected output)\s*$", re.MULTILINE)
+SECTION_HEADING = re.compile(r"^### (Aim|Setup|Input|Expected output)\s*$", re.MULTILINE)
 CONFIG_LINE = re.compile(
-    r"^(run-command|setup-command|working-directory|timeout-seconds):\s*(.*?)\s*$",
+    r"^(run-command|setup-command|before-each-command|working-directory|timeout-seconds):\s*(.*?)\s*$",
     re.MULTILINE,
 )
 
@@ -24,6 +24,7 @@ class TestCase:
 
     name: str
     aim: str
+    setup_command: str | None
     console_input: str
     expected_output: str
 
@@ -64,6 +65,22 @@ def read_aim(text: str, case_name: str) -> str:
     return aim
 
 
+def read_optional_code_block(text: str, section_name: str) -> str | None:
+    """Return an optional fenced code block following a named section heading."""
+    heading = re.search(rf"^### {re.escape(section_name)}\s*$", text, re.MULTILINE)
+    if heading is None:
+        return None
+    after_heading = text[heading.end():]
+    opening = re.search(r"^```[^\n]*\n", after_heading, re.MULTILINE)
+    if opening is None:
+        raise ValueError(f"{section_name} must contain a fenced code block")
+    content_start = opening.end()
+    closing = re.search(r"^```\s*$", after_heading[content_start:], re.MULTILINE)
+    if closing is None:
+        raise ValueError(f"{section_name} has an unterminated code block")
+    return after_heading[content_start:content_start + closing.start()].rstrip("\n")
+
+
 def parse_test_cases(plan_text: str) -> list[TestCase]:
     """Parse all test case sections from the plan."""
     visible_plan = re.sub(r"<!--.*?-->", "", plan_text, flags=re.DOTALL)
@@ -76,6 +93,7 @@ def parse_test_cases(plan_text: str) -> list[TestCase]:
         cases.append(TestCase(
             name=name,
             aim=read_aim(case_text, name),
+            setup_command=read_optional_code_block(case_text, "Setup"),
             console_input=read_code_block(case_text, "Input", name),
             expected_output=read_code_block(case_text, "Expected output", name),
         ))
@@ -84,7 +102,7 @@ def parse_test_cases(plan_text: str) -> list[TestCase]:
     return cases
 
 
-def parse_config(plan_text: str, plan_path: Path) -> tuple[str, str | None, Path, float]:
+def parse_config(plan_text: str, plan_path: Path) -> tuple[str, str | None, str | None, Path, float]:
     """Read runner settings from top-level plan metadata."""
     config = {match.group(1): match.group(2) for match in CONFIG_LINE.finditer(plan_text)}
     run_command = config.get("run-command")
@@ -102,7 +120,7 @@ def parse_config(plan_text: str, plan_path: Path) -> tuple[str, str | None, Path
         raise ValueError("'timeout-seconds' must be a number.") from error
     if timeout <= 0:
         raise ValueError("'timeout-seconds' must be greater than zero.")
-    return run_command, config.get("setup-command"), working_directory, timeout
+    return run_command, config.get("setup-command"), config.get("before-each-command"), working_directory, timeout
 
 
 def format_block(title: str, content: str) -> str:
@@ -140,7 +158,7 @@ def main() -> int:
     record_path = plan_path.with_name("ui-test-record.md")
     try:
         plan_text = plan_path.read_text(encoding="utf-8")
-        run_target, setup_command, working_directory, timeout = parse_config(plan_text, plan_path)
+        run_target, setup_command, before_each_command, working_directory, timeout = parse_config(plan_text, plan_path)
         cases = parse_test_cases(plan_text)
     except (OSError, ValueError) as error:
         print(f"Test plan error: {error}", file=sys.stderr)
@@ -163,6 +181,14 @@ def main() -> int:
 
     for number, case in enumerate(cases, start=1):
         try:
+            if before_each_command:
+                cleanup = run_command(before_each_command, working_directory, "", timeout)
+                if cleanup.returncode != 0:
+                    raise RuntimeError(cleanup.stdout + cleanup.stderr)
+            if case.setup_command:
+                preparation = run_command(case.setup_command, working_directory, "", timeout)
+                if preparation.returncode != 0:
+                    raise RuntimeError(preparation.stdout + preparation.stderr)
             result = run_command(run_target, working_directory, case.console_input, timeout)
             actual_output = result.stdout
             if result.stderr:
@@ -170,6 +196,10 @@ def main() -> int:
             passed = result.returncode == 0 and normalise_output(actual_output) == normalise_output(case.expected_output)
         except subprocess.TimeoutExpired as error:
             actual_output = (error.stdout or "") + (error.stderr or "")
+            result = None
+            passed = False
+        except RuntimeError as error:
+            actual_output = str(error)
             result = None
             passed = False
 
