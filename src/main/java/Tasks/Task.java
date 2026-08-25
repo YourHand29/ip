@@ -55,6 +55,30 @@ public abstract class Task {
         return true;
     }
 
+    /**
+     * Returns this task's description.
+     *
+     * @return The task description.
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * Returns this task in the format used by the data file.
+     *
+     * @return A single line that represents this task.
+     */
+    public final String toFileString() {
+        String status = isDone ? "1" : "0";
+        return taskType.getIcon() + " | " + status + " | " + description + getFileDetails();
+    }
+
+    /** Returns additional task-type-specific fields for the data file. */
+    protected String getFileDetails() {
+        return "";
+    }
+
     /** Returns the task's display text, including its completion status. */
     @Override
     public String toString() {

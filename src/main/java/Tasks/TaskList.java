@@ -71,4 +71,28 @@ public class TaskList {
     public boolean isEmpty() {
         return tasks.isEmpty();
     }
+
+    /**
+     * Returns an immutable snapshot of the current tasks.
+     *
+     * @return Current tasks in their display order.
+     */
+    public List<Task> getTasks() {
+        return List.copyOf(tasks);
+    }
+
+    /**
+     * Returns the number of the first task with the given description.
+     *
+     * @param description Description to search for.
+     * @return The one-based task number, or {@code -1} when no task matches.
+     */
+    public int findTaskNumberByDescription(String description) {
+        for (int index = 0; index < tasks.size(); index++) {
+            if (tasks.get(index).getDescription().equalsIgnoreCase(description)) {
+                return index + 1;
+            }
+        }
+        return -1;
+    }
 }

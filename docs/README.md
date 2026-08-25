@@ -1,6 +1,6 @@
 # YourHand User Guide
 
-YourHand is a friendly command-line task manager. It keeps your to-dos, deadlines, and events in memory for the current session.
+YourHand is a friendly command-line task manager. It saves your to-dos, deadlines, and events between program sessions.
 
 ## Quick start
 
@@ -70,6 +70,24 @@ delete 3
 
 After deletion, remaining tasks are renumbered by `list`.
 
+### Inspect corrupted saved entries
+
+Use `corrupt` to see saved entries that YourHand could not load and the reason each entry is invalid.
+
+```text
+corrupt
+```
+
+### Repair a corrupted saved entry
+
+Use `editcorrupt ENTRY_NUMBER CORRECTED_FILE_LINE` to replace one displayed corrupt entry. The corrected line must use the data-file format.
+
+```text
+editcorrupt 1 D | 0 | return book | Sunday
+```
+
+The repaired task is added back to your task list and saved immediately.
+
 ### Exit
 
 Use `bye` to close YourHand.
@@ -82,7 +100,11 @@ bye
 
 YourHand keeps running after an invalid command. It reports a message explaining what is missing or invalid, and the existing task list is unchanged. For example, `todo` needs a description, and `mark one` needs a whole-number task number.
 
+The `|` character is reserved for the saved-data format and cannot be used in task text. If the saved file contains malformed task entries, YourHand skips those entries and reports how many were ignored while still loading valid tasks.
+
+When adding a task with the same description as an existing task, YourHand shows a reminder but still adds it.
+
 ## Limitations
 
-- Tasks are kept only in memory and are not saved after the program exits.
+- Tasks are saved automatically in `data/yourhand.txt` and restored when YourHand starts.
 - Dates and times are treated as text; YourHand does not validate or sort them.

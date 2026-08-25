@@ -1,7 +1,8 @@
 # UI Test Plan
 
 run-command: java -cp _temp/ui-test-classes YourHand
-setup-command: javac -d _temp/ui-test-classes src/main/java/YourHand.java src/main/java/tasks/*.java src/main/java/exceptions/*.java
+setup-command: javac -d _temp/ui-test-classes src/main/java/YourHand.java src/main/java/tasks/*.java src/main/java/exceptions/*.java src/main/java/storage/*.java
+before-each-command: if exist data\yourhand.txt del /q data\yourhand.txt
 working-directory: ..
 timeout-seconds: 10
 
@@ -35,7 +36,7 @@ ____________________________________________________________
  You handed me an empty to-do. Try: todo borrow book
 ____________________________________________________________
 ____________________________________________________________
- Hmm, I don't speak that yet. Try todo, deadline, event, list, mark, unmark, delete, or bye.
+ Hmm, I don't speak that yet. Try todo, deadline, event, list, mark, unmark, delete, corrupt, editcorrupt, or bye.
 ____________________________________________________________
 ____________________________________________________________
  See you never :)
@@ -461,6 +462,262 @@ ____________________________________________________________
 ____________________________________________________________
  Here's your list of responsibilities:
  1.[T][X] write essay
+____________________________________________________________
+____________________________________________________________
+ See you never :)
+____________________________________________________________
+```
+
+## Test case: Save a new task without changing the console dialogue
+
+### Aim
+
+Confirm that adding a task still produces the usual response while causing the task list to be saved. After this test, `data/yourhand.txt` should contain `T | 0 | save task`.
+
+### Input
+
+```text
+todo save task
+bye
+```
+
+### Expected output
+
+```text
+__   __                 _   _                 _
+\ \ / /__  _   _ _ __  | | | | __ _ _ __   __| |
+ \ V / _ \| | | | '__| | |_| |/ _` | '_ \ / _` |
+  | | (_) | |_| | |    |  _  | (_| | | | | (_| |
+  |_|\___/ \__,_|_|    |_| |_|\__,_|_| |_|\__,_|
+____________________________________________________________
+ Selamat Datang 早上好! YourHand 为你服务
+ 你来这干嘛 What are you here for?
+____________________________________________________________
+____________________________________________________________
+ Fine, I've written this down:
+   [T][ ] save task
+ That's 1 task on your plate.
+____________________________________________________________
+____________________________________________________________
+ See you never :)
+____________________________________________________________
+```
+
+## Test case: Load saved tasks when the chatbot starts
+
+### Aim
+
+Confirm that a fresh program session restores the task type, description, date or time fields, and completion status from the saved data file.
+
+### Setup
+
+```powershell
+powershell -NoProfile -Command "New-Item -ItemType Directory -Force data | Out-Null; [System.IO.File]::WriteAllLines('data/yourhand.txt', @('T | 1 | read book', 'D | 0 | return book | Sunday', 'E | 1 | team meeting | Mon 2pm | 4pm'))"
+```
+
+### Input
+
+```text
+list
+bye
+```
+
+### Expected output
+
+```text
+__   __                 _   _                 _
+\ \ / /__  _   _ _ __  | | | | __ _ _ __   __| |
+ \ V / _ \| | | | '__| | |_| |/ _` | '_ \ / _` |
+  | | (_) | |_| | |    |  _  | (_| | | | | (_| |
+  |_|\___/ \__,_|_|    |_| |_|\__,_|_| |_|\__,_|
+____________________________________________________________
+ Selamat Datang 早上好! YourHand 为你服务
+ 你来这干嘛 What are you here for?
+____________________________________________________________
+____________________________________________________________
+ Here's your list of responsibilities:
+ 1.[T][X] read book
+ 2.[D][ ] return book (by: Sunday)
+ 3.[E][X] team meeting (from: Mon 2pm to: 4pm)
+____________________________________________________________
+____________________________________________________________
+ See you never :)
+____________________________________________________________
+```
+
+## Test case: Skip malformed saved tasks and retain valid ones
+
+### Aim
+
+Confirm that corrupt saved-data lines do not crash the chatbot and do not prevent valid tasks from loading.
+
+### Setup
+
+```powershell
+powershell -NoProfile -Command "New-Item -ItemType Directory -Force data | Out-Null; [System.IO.File]::WriteAllLines('data/yourhand.txt', @('T | 1 | kept task', 'D | 2 | bad status | Monday', 'E | 0 | missing end | Tuesday', 'T | 0 | extra field | unexpected', 'Q | 0 | unknown type'))"
+```
+
+### Input
+
+```text
+list
+bye
+```
+
+### Expected output
+
+```text
+__   __                 _   _                 _
+\ \ / /__  _   _ _ __  | | | | __ _ _ __   __| |
+ \ V / _ \| | | | '__| | |_| |/ _` | '_ \ / _` |
+  | | (_) | |_| | |    |  _  | (_| | | | | (_| |
+  |_|\___/ \__,_|_|    |_| |_|\__,_|_| |_|\__,_|
+____________________________________________________________
+ Selamat Datang 早上好! YourHand 为你服务
+ 你来这干嘛 What are you here for?
+____________________________________________________________
+ I skipped 4 broken saved tasks.
+____________________________________________________________
+ Here's your list of responsibilities:
+ 1.[T][X] kept task
+____________________________________________________________
+____________________________________________________________
+ See you never :)
+____________________________________________________________
+```
+
+## Test case: Reject the storage delimiter in user task text
+
+### Aim
+
+Confirm that a pipe character is rejected because it would corrupt the saved-data format, and that no task is added.
+
+### Input
+
+```text
+todo contains | delimiter
+list
+bye
+```
+
+### Expected output
+
+```text
+__   __                 _   _                 _
+\ \ / /__  _   _ _ __  | | | | __ _ _ __   __| |
+ \ V / _ \| | | | '__| | |_| |/ _` | '_ \ / _` |
+  | | (_) | |_| | |    |  _  | (_| | | | | (_| |
+  |_|\___/ \__,_|_|    |_| |_|\__,_|_| |_|\__,_|
+____________________________________________________________
+ Selamat Datang 早上好! YourHand 为你服务
+ 你来这干嘛 What are you here for?
+____________________________________________________________
+____________________________________________________________
+ Please don't use | in a task. I need it to save your data safely.
+____________________________________________________________
+____________________________________________________________
+ Your task list is empty.
+____________________________________________________________
+____________________________________________________________
+ See you never :)
+____________________________________________________________
+```
+
+## Test case: Inspect and repair a corrupted saved task
+
+### Aim
+
+Confirm that the user can view a corrupt saved entry, see its specific problem, repair it, and restore it to the active task list.
+
+### Setup
+
+```powershell
+powershell -NoProfile -Command "New-Item -ItemType Directory -Force data | Out-Null; Set-Content -Path data/yourhand.txt -Value 'D | 2 | return book | Sunday'"
+```
+
+### Input
+
+```text
+corrupt
+editcorrupt 1 D | 0 | return book | Sunday
+list
+bye
+```
+
+### Expected output
+
+```text
+__   __                 _   _                 _
+\ \ / /__  _   _ _ __  | | | | __ _ _ __   __| |
+ \ V / _ \| | | | '__| | |_| |/ _` | '_ \ / _` |
+  | | (_) | |_| | |    |  _  | (_| | | | | (_| |
+  |_|\___/ \__,_|_|    |_| |_|\__,_|_| |_|\__,_|
+____________________________________________________________
+ Selamat Datang 早上好! YourHand 为你服务
+ 你来这干嘛 What are you here for?
+____________________________________________________________
+ I skipped 1 broken saved task.
+____________________________________________________________
+ Here's what looks broken in data/yourhand.txt:
+ 1. D | 2 | return book | Sunday
+    Why: Saved task status must be 0 or 1.
+ Use: editcorrupt ENTRY_NUMBER CORRECTED_FILE_LINE
+____________________________________________________________
+____________________________________________________________
+ Fixed and restored this task:
+   [D][ ] return book (by: Sunday)
+____________________________________________________________
+____________________________________________________________
+ Here's your list of responsibilities:
+ 1.[D][ ] return book (by: Sunday)
+____________________________________________________________
+____________________________________________________________
+ See you never :)
+____________________________________________________________
+```
+
+## Test case: Remind the user about duplicate task descriptions
+
+### Aim
+
+Confirm that adding a duplicate description displays a reminder while retaining both tasks.
+
+### Input
+
+```text
+todo read book
+todo read book
+list
+bye
+```
+
+### Expected output
+
+```text
+__   __                 _   _                 _
+\ \ / /__  _   _ _ __  | | | | __ _ _ __   __| |
+ \ V / _ \| | | | '__| | |_| |/ _` | '_ \ / _` |
+  | | (_) | |_| | |    |  _  | (_| | | | | (_| |
+  |_|\___/ \__,_|_|    |_| |_|\__,_|_| |_|\__,_|
+____________________________________________________________
+ Selamat Datang 早上好! YourHand 为你服务
+ 你来这干嘛 What are you here for?
+____________________________________________________________
+____________________________________________________________
+ Fine, I've written this down:
+   [T][ ] read book
+ That's 1 task on your plate.
+____________________________________________________________
+____________________________________________________________
+ Heads up: task 1 already has that description. I'll add this one too.
+ Fine, I've written this down:
+   [T][ ] read book
+ That's 2 tasks on your plate.
+____________________________________________________________
+____________________________________________________________
+ Here's your list of responsibilities:
+ 1.[T][ ] read book
+ 2.[T][ ] read book
 ____________________________________________________________
 ____________________________________________________________
  See you never :)

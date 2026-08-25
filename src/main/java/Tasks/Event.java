@@ -20,6 +20,12 @@ public class Event extends Task {
         this.to = to;
     }
 
+    /** Returns this event's start and end times in data-file format. */
+    @Override
+    protected String getFileDetails() {
+        return " | " + from + " | " + to;
+    }
+
     /** Returns this event's display text, including its start and end times. */
     @Override
     public String toString() {

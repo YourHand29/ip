@@ -4,7 +4,10 @@ import tasks.Event;
 import tasks.Task;
 import tasks.TaskList;
 import tasks.Todo;
+import storage.Storage;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -20,6 +23,7 @@ public class YourHand {
             "^event\\s+(.+?)\\s+/from\\s+(.+?)\\s+/to\\s+(.+)$");
     private static final Pattern STATUS_PATTERN = Pattern.compile("^(mark|unmark)(?:\\s+(.+))?$");
     private static final Pattern DELETE_PATTERN = Pattern.compile("^delete(?:\\s+(.+))?$");
+    private static final Pattern EDIT_CORRUPT_PATTERN = Pattern.compile("^editcorrupt(?:\\s+(.+?))?(?:\\s+(.+))?$");
 
     /**
      * Starts the YourHand command-line application.
@@ -30,12 +34,15 @@ public class YourHand {
         printWelcomeMessage();
 
         Scanner scanner = new Scanner(System.in);
-        TaskList taskList = new TaskList();
+        Storage storage = new Storage();
+        Storage.LoadResult loadResult = loadTasks(storage);
+        TaskList taskList = loadResult.taskList();
+        printSkippedTaskWarning(loadResult.skippedTaskCount());
         while (scanner.hasNextLine()) {
             String command = scanner.nextLine().trim();
             System.out.println(SEPARATOR);
             try {
-                if (handleCommand(command, taskList)) {
+                if (handleCommand(command, taskList, storage)) {
                     System.out.println(SEPARATOR);
                     break;
                 }
@@ -68,7 +75,7 @@ public class YourHand {
      * @return true when the command is {@code bye}
      * @throws YourHandException if the command is invalid
      */
-    private static boolean handleCommand(String command, TaskList taskList) throws YourHandException {
+    private static boolean handleCommand(String command, TaskList taskList, Storage storage) throws YourHandException {
         if (command.equals("bye")) {
             System.out.println(" See you never :)");
             return true;
@@ -77,21 +84,33 @@ public class YourHand {
             printTaskList(taskList);
             return false;
         }
+        if (command.equals("corrupt")) {
+            printCorruptedTasks(storage);
+            return false;
+        }
+
+        Matcher editCorruptMatcher = EDIT_CORRUPT_PATTERN.matcher(command);
+        if (editCorruptMatcher.matches()) {
+            editCorruptedTask(editCorruptMatcher, taskList, storage);
+            return false;
+        }
 
         Matcher statusMatcher = STATUS_PATTERN.matcher(command);
         if (statusMatcher.matches()) {
-            updateTaskStatus(statusMatcher, taskList);
+            updateTaskStatus(statusMatcher, taskList, storage);
             return false;
         }
 
         Matcher deleteMatcher = DELETE_PATTERN.matcher(command);
         if (deleteMatcher.matches()) {
-            deleteTask(deleteMatcher, taskList);
+            deleteTask(deleteMatcher, taskList, storage);
             return false;
         }
 
         Task task = createTask(command);
+        printDuplicateTaskWarning(task, taskList);
         taskList.add(task);
+        saveTasks(taskList, storage);
         System.out.println(" Fine, I've written this down:");
         System.out.println("   " + task);
         String taskWord = taskList.size() == 1 ? "task" : "tasks";
@@ -112,53 +131,89 @@ public class YourHand {
         }
     }
 
+    /** Lists corrupt saved entries and their repair instructions. */
+    private static void printCorruptedTasks(Storage storage) {
+        if (storage.getCorruptedTasks().isEmpty()) {
+            System.out.println(" Nothing in the saved file needs fixing right now.");
+            return;
+        }
+
+        System.out.println(" Here's what looks broken in data/yourhand.txt:");
+        for (int index = 0; index < storage.getCorruptedTasks().size(); index++) {
+            Storage.CorruptedTask corruptedTask = storage.getCorruptedTasks().get(index);
+            System.out.println(" " + (index + 1) + ". " + corruptedTask.taskLine());
+            System.out.println("    Why: " + corruptedTask.reason());
+        }
+        System.out.println(" Use: editcorrupt ENTRY_NUMBER CORRECTED_FILE_LINE");
+    }
+
+    /** Repairs a corrupt saved entry and adds the reconstructed task to the task list. */
+    private static void editCorruptedTask(Matcher matcher, TaskList taskList, Storage storage)
+            throws YourHandException {
+        String entryNumberText = matcher.group(1);
+        String correctedLine = matcher.group(2);
+        if (entryNumberText == null || correctedLine == null || correctedLine.isBlank()) {
+            throw new YourHandException("Try: editcorrupt 1 T | 0 | read book");
+        }
+
+        int entryNumber = parseNumber(entryNumberText, "Corrupt entry numbers are whole numbers.");
+        Task repairedTask;
+        try {
+            repairedTask = storage.repairCorruptedTask(entryNumber, correctedLine);
+        } catch (IllegalArgumentException exception) {
+            throw new YourHandException("That repair still looks wrong: " + exception.getMessage());
+        }
+        printDuplicateTaskWarning(repairedTask, taskList);
+        taskList.add(repairedTask);
+        saveTasks(taskList, storage);
+        System.out.println(" Fixed and restored this task:");
+        System.out.println("   " + repairedTask);
+    }
+
     /** Updates a task's completion status from a validated mark or unmark command. */
-    private static void updateTaskStatus(Matcher matcher, TaskList taskList) throws YourHandException {
+    private static void updateTaskStatus(Matcher matcher, TaskList taskList, Storage storage) throws YourHandException {
         String taskNumberText = matcher.group(2);
         if (taskNumberText == null || taskNumberText.isBlank()) {
             throw new YourHandException("Don't make me guess — give me a task number, e.g. "
                     + matcher.group(1) + " 2.");
         }
 
-        int taskNumber;
-        try {
-            taskNumber = Integer.parseInt(taskNumberText.trim());
-        } catch (NumberFormatException exception) {
-            throw new YourHandException("Task numbers are whole numbers, not creative writing.");
-        }
+        int taskNumber = parseNumber(taskNumberText, "Task numbers are whole numbers, not creative writing.");
 
         Task task = taskList.getTask(taskNumber);
+        boolean wasUpdated;
         if (matcher.group(1).equals("mark")) {
-            if (task.markAsDone()) {
+            wasUpdated = task.markAsDone();
+            if (wasUpdated) {
                 System.out.println(" Good job for surviving. I'll mark this as done:");
             } else {
                 System.out.println(" That task was already done. Double-checking never hurts:");
             }
         } else {
-            if (task.markAsUndone()) {
+            wasUpdated = task.markAsUndone();
+            if (wasUpdated) {
                 System.out.println(" Unmarked. Check pls:");
             } else {
                 System.out.println(" That task was already waiting for you. No change:");
             }
         }
+        if (wasUpdated) {
+            saveTasks(taskList, storage);
+        }
         System.out.println("   " + task);
     }
 
     /** Removes the task specified by a validated delete command. */
-    private static void deleteTask(Matcher matcher, TaskList taskList) throws YourHandException {
+    private static void deleteTask(Matcher matcher, TaskList taskList, Storage storage) throws YourHandException {
         String taskNumberText = matcher.group(1);
         if (taskNumberText == null || taskNumberText.isBlank()) {
             throw new YourHandException("Don't make me guess — give me a task number, e.g. delete 2.");
         }
 
-        int taskNumber;
-        try {
-            taskNumber = Integer.parseInt(taskNumberText.trim());
-        } catch (NumberFormatException exception) {
-            throw new YourHandException("Task numbers are whole numbers, not creative writing.");
-        }
+        int taskNumber = parseNumber(taskNumberText, "Task numbers are whole numbers, not creative writing.");
 
         Task removedTask = taskList.removeTask(taskNumber);
+        saveTasks(taskList, storage);
         System.out.println(" Poof. I've removed this task:");
         System.out.println("   " + removedTask);
         String taskWord = taskList.size() == 1 ? "task" : "tasks";
@@ -173,12 +228,14 @@ public class YourHand {
             if (description == null || description.isBlank()) {
                 throw new YourHandException("You handed me an empty to-do. Try: todo borrow book");
             }
-            return new Todo(description.trim());
+            return new Todo(validateTaskText(description, "You handed me an empty to-do. Try: todo borrow book"));
         }
 
         Matcher deadlineMatcher = DEADLINE_PATTERN.matcher(command);
         if (deadlineMatcher.matches()) {
-            return new Deadline(deadlineMatcher.group(1).trim(), deadlineMatcher.group(2).trim());
+            return new Deadline(
+                    validateTaskText(deadlineMatcher.group(1), "Your deadline needs a description."),
+                    validateTaskText(deadlineMatcher.group(2), "Your deadline needs a due date or time."));
         }
         if (isCommand(command, "deadline")) {
             throw new YourHandException("Bro due when please. Try: deadline DESCRIPTION /by DATE_OR_TIME");
@@ -186,18 +243,79 @@ public class YourHand {
 
         Matcher eventMatcher = EVENT_PATTERN.matcher(command);
         if (eventMatcher.matches()) {
-            return new Event(eventMatcher.group(1).trim(), eventMatcher.group(2).trim(), eventMatcher.group(3).trim());
+            return new Event(
+                    validateTaskText(eventMatcher.group(1), "Your event needs a description."),
+                    validateTaskText(eventMatcher.group(2), "Your event needs a start time."),
+                    validateTaskText(eventMatcher.group(3), "Your event needs an end time."));
         }
         if (isCommand(command, "event")) {
             throw new YourHandException("Walao when the even happening. Try: event DESCRIPTION /from START /to END");
         }
 
         throw new YourHandException("Hmm, I don't speak that yet. Try todo, deadline, event, list, mark, "
-                + "unmark, delete, or bye.");
+                + "unmark, delete, corrupt, editcorrupt, or bye.");
     }
 
     /** Returns whether a command begins with a command word. */
     private static boolean isCommand(String command, String commandWord) {
         return command.equals(commandWord) || command.startsWith(commandWord + " ");
+    }
+
+    /** Converts user-entered text to a whole number or reports a command-specific error. */
+    private static int parseNumber(String numberText, String errorMessage) throws YourHandException {
+        try {
+            return Integer.parseInt(numberText.trim());
+        } catch (NumberFormatException exception) {
+            throw new YourHandException(errorMessage);
+        }
+    }
+
+    /** Warns when a new task duplicates an existing task description. */
+    private static void printDuplicateTaskWarning(Task task, TaskList taskList) {
+        int existingTaskNumber = taskList.findTaskNumberByDescription(task.getDescription());
+        if (existingTaskNumber != -1) {
+            System.out.println(" Heads up: task " + existingTaskNumber + " already has that description."
+                    + " I'll add this one too.");
+        }
+    }
+
+    /** Validates and trims text that will be stored in the pipe-delimited data file. */
+    private static String validateTaskText(String text, String emptyMessage) throws YourHandException {
+        String trimmedText = text.trim();
+        if (trimmedText.isEmpty()) {
+            throw new YourHandException(emptyMessage);
+        }
+        if (trimmedText.contains("|")) {
+            throw new YourHandException("Please don't use | in a task. I need it to save your data safely.");
+        }
+        return trimmedText;
+    }
+
+    /** Saves the current list and reports any file-writing problem to the user. */
+    private static void saveTasks(TaskList taskList, Storage storage) throws YourHandException {
+        try {
+            storage.save(taskList);
+        } catch (IOException | SecurityException exception) {
+            throw new YourHandException("I couldn't save your tasks. Please check the data folder.");
+        }
+    }
+
+    /** Loads saved tasks and starts with an empty list if the data file cannot be read. */
+    private static Storage.LoadResult loadTasks(Storage storage) {
+        try {
+            return storage.load();
+        } catch (IOException | SecurityException exception) {
+            System.out.println(" I couldn't load your saved tasks. Starting with a clean slate.");
+            return new Storage.LoadResult(new TaskList(), List.of());
+        }
+    }
+
+    /** Informs the user when malformed saved entries were ignored during startup. */
+    private static void printSkippedTaskWarning(int skippedTaskCount) {
+        if (skippedTaskCount == 0) {
+            return;
+        }
+        String taskWord = skippedTaskCount == 1 ? "task" : "tasks";
+        System.out.println(" I skipped " + skippedTaskCount + " broken saved " + taskWord + ".");
     }
 }
