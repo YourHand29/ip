@@ -1,7 +1,7 @@
-package ui;
+package yourhand.ui;
 
-import tasks.Task;
-import tasks.TaskList;
+import yourhand.tasks.Task;
+import yourhand.tasks.TaskList;
 
 import java.util.Scanner;
 

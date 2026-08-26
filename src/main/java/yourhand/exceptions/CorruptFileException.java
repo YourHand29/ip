@@ -1,4 +1,4 @@
-package exceptions;
+package yourhand.exceptions;
 
 /**
  * Represents invalid task data found while loading YourHand's saved data file.

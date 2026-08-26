@@ -1,7 +1,7 @@
 # UI Test Record
 
 Plan: `C:\Users\asus\Documents\NUS CS\Y2S1\CS2103T\iP\ip\test\ui-test-plan.md`
-Run command: `java -cp _temp/ui-test-classes YourHand`
+Run command: `java -cp _temp/ui-test-classes yourhand.YourHand`
 ## Test 1: Reject an empty to-do and unknown command
 **Aim:** Confirm that invalid input is handled through a clear user-visible error message and that the chatbot continues running.
 ### Console input
