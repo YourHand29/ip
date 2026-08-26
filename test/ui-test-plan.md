@@ -1,7 +1,7 @@
 # UI Test Plan
 
 run-command: java -cp _temp/ui-test-classes YourHand
-setup-command: javac -d _temp/ui-test-classes src/main/java/YourHand.java src/main/java/tasks/*.java src/main/java/exceptions/*.java src/main/java/storage/*.java src/main/java/ui/*.java
+setup-command: javac -d _temp/ui-test-classes src/main/java/YourHand.java src/main/java/tasks/*.java src/main/java/exceptions/*.java src/main/java/storage/*.java src/main/java/ui/*.java src/main/java/commands/*.java
 before-each-command: if exist data\yourhand.txt del /q data\yourhand.txt
 working-directory: ..
 timeout-seconds: 10
@@ -511,8 +511,8 @@ Confirm that a fresh program session restores the task type, description, date o
 
 ### Setup
 
-```powershell
-powershell -NoProfile -Command "New-Item -ItemType Directory -Force data | Out-Null; [System.IO.File]::WriteAllLines('data/yourhand.txt', @('T | 1 | read book', 'D | 0 | return book | 2019-12-02T18:00', 'E | 1 | team meeting | 2026-08-26T18:00 | 2026-08-26T20:00'))"
+```cmd
+mkdir data 2> nul & copy /Y test\fixtures\valid-saved-tasks.txt data\yourhand.txt > nul
 ```
 
 ### Input
@@ -553,8 +553,8 @@ Confirm that one malformed saved-data line prevents every task in that file from
 
 ### Setup
 
-```powershell
-powershell -NoProfile -Command "New-Item -ItemType Directory -Force data | Out-Null; [System.IO.File]::WriteAllLines('data/yourhand.txt', @('T | 1 | kept task', 'D | 0 | bad date | 2026-02-30', 'E | 0 | backwards event | 2026-08-27 | 2026-08-26', 'T | 0 | extra field | unexpected', 'Q | 0 | unknown type'))"
+```cmd
+mkdir data 2> nul & copy /Y test\fixtures\corrupt-saved-tasks.txt data\yourhand.txt > nul
 ```
 
 ### Input

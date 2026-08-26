@@ -1,3 +1,9 @@
+import commands.AddTaskCommand;
+import commands.Command;
+import commands.DeleteCommand;
+import commands.ExitCommand;
+import commands.ListCommand;
+import commands.TaskStatusCommand;
 import exceptions.CorruptFileException;
 import exceptions.YourHandException;
 import tasks.Deadline;
@@ -55,7 +61,9 @@ public class YourHand {
             String command = ui.readCommand();
             ui.showSeparator();
             try {
-                if (handleCommand(command, taskList, storage, ui)) {
+                Command parsedCommand = parseCommand(command);
+                parsedCommand.execute(taskList, ui, storage);
+                if (parsedCommand.isExit()) {
                     ui.showSeparator();
                     break;
                 }
@@ -67,46 +75,34 @@ public class YourHand {
     }
 
     /**
-     * Handles one command and returns whether the application should exit.
+     * Converts a user-entered command into an executable command object.
      *
      * @param command user-entered command
-     * @param taskList task storage for this session
-     * @return true when the command is {@code bye}
+     * @return The executable command represented by the input.
      * @throws YourHandException if the command is invalid
      */
-    private static boolean handleCommand(String command, TaskList taskList, Storage storage, Ui ui)
-            throws YourHandException {
+    private static Command parseCommand(String command) throws YourHandException {
         if (command.equals("bye")) {
-            ui.showGoodbyeMessage();
-            return true;
+            return new ExitCommand();
         }
         if (command.equals("list")) {
-            ui.showTaskList(taskList);
-            return false;
+            return new ListCommand();
         }
         Matcher statusMatcher = STATUS_PATTERN.matcher(command);
         if (statusMatcher.matches()) {
-            updateTaskStatus(statusMatcher, taskList, storage, ui);
-            return false;
+            return createTaskStatusCommand(statusMatcher);
         }
 
         Matcher deleteMatcher = DELETE_PATTERN.matcher(command);
         if (deleteMatcher.matches()) {
-            deleteTask(deleteMatcher, taskList, storage, ui);
-            return false;
+            return createDeleteCommand(deleteMatcher);
         }
 
-        Task task = createTask(command);
-        printDuplicateTaskWarning(task, taskList, ui);
-        taskList.add(task);
-        saveTasks(taskList, storage);
-        ui.showTaskAdded(task, taskList.size());
-        return false;
+        return new AddTaskCommand(createTask(command));
     }
 
     /** Updates a task's completion status from a validated mark or unmark command. */
-    private static void updateTaskStatus(Matcher matcher, TaskList taskList, Storage storage, Ui ui)
-            throws YourHandException {
+    private static Command createTaskStatusCommand(Matcher matcher) throws YourHandException {
         String taskNumberText = matcher.group(2);
         if (taskNumberText == null || taskNumberText.isBlank()) {
             throw new YourHandException("Don't make me guess — give me a task number, e.g. "
@@ -117,23 +113,12 @@ public class YourHand {
                 taskNumberText,
                 "Task numbers are whole numbers, not creative writing.");
 
-        Task task = taskList.getTask(taskNumber);
-        boolean wasUpdated;
         boolean isMarkCommand = matcher.group(1).equals("mark");
-        if (isMarkCommand) {
-            wasUpdated = task.markAsDone();
-        } else {
-            wasUpdated = task.markAsUndone();
-        }
-        if (wasUpdated) {
-            saveTasks(taskList, storage);
-        }
-        ui.showTaskStatus(task, isMarkCommand, wasUpdated);
+        return new TaskStatusCommand(taskNumber, isMarkCommand);
     }
 
     /** Removes the task specified by a validated delete command. */
-    private static void deleteTask(Matcher matcher, TaskList taskList, Storage storage, Ui ui)
-            throws YourHandException {
+    private static Command createDeleteCommand(Matcher matcher) throws YourHandException {
         String taskNumberText = matcher.group(1);
         if (taskNumberText == null || taskNumberText.isBlank()) {
             throw new YourHandException("Don't make me guess — give me a task number, e.g. delete 2.");
@@ -143,9 +128,7 @@ public class YourHand {
                 taskNumberText,
                 "Task numbers are whole numbers, not creative writing.");
 
-        Task removedTask = taskList.removeTask(taskNumber);
-        saveTasks(taskList, storage);
-        ui.showTaskDeleted(removedTask, taskList.size());
+        return new DeleteCommand(taskNumber);
     }
 
     /** Creates a task from a task-creation command. */
@@ -212,14 +195,6 @@ public class YourHand {
         }
     }
 
-    /** Warns when a new task duplicates an existing task description. */
-    private static void printDuplicateTaskWarning(Task task, TaskList taskList, Ui ui) {
-        int existingTaskNumber = taskList.findTaskNumberByDescription(task.getDescription());
-        if (existingTaskNumber != -1) {
-            ui.showDuplicateTaskWarning(existingTaskNumber);
-        }
-    }
-
     /** Validates and trims text that will be stored in the pipe-delimited data file. */
     private static String validateTaskText(String text, String emptyMessage) throws YourHandException {
         String trimmedText = text.trim();
@@ -254,15 +229,6 @@ public class YourHand {
             }
         }
         throw new YourHandException("Use yyyy-M-d, yyyy-M-d HHmm, yyyy-M-d HH:mm, or d/M/yyyy HHmm.");
-    }
-
-    /** Saves the current list and reports any file-writing problem to the user. */
-    private static void saveTasks(TaskList taskList, Storage storage) throws YourHandException {
-        try {
-            storage.save(taskList);
-        } catch (IOException | SecurityException exception) {
-            throw new YourHandException("I couldn't save your tasks. Please check the data folder.");
-        }
     }
 
     /** Loads saved tasks and starts with an empty list if the data file cannot be read. */
