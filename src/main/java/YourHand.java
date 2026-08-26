@@ -7,6 +7,7 @@ import tasks.TaskDateTime;
 import tasks.TaskList;
 import tasks.Todo;
 import storage.Storage;
+import ui.Ui;
 
 import java.io.IOException;
 import java.time.LocalDate;
@@ -15,7 +16,6 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.time.format.ResolverStyle;
 import java.util.List;
-import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,7 +23,6 @@ import java.util.regex.Pattern;
  * A command-line chatbot that manages to-dos, deadlines, and events.
  */
 public class YourHand {
-    private static final String SEPARATOR = "____________________________________________________________";
     private static final Pattern TODO_PATTERN = Pattern.compile("^todo(?:\\s+(.*))?$");
     private static final Pattern DEADLINE_PATTERN = Pattern.compile("^deadline\\s+(.+?)\\s+/by\\s+(.+)$");
     private static final Pattern EVENT_PATTERN = Pattern.compile(
@@ -48,38 +47,23 @@ public class YourHand {
      * @param args Command-line arguments, which are not used.
      */
     public static void main(String[] args) {
-        printWelcomeMessage();
-
-        Scanner scanner = new Scanner(System.in);
+        Ui ui = new Ui();
+        ui.showWelcomeMessage();
         Storage storage = new Storage();
-        TaskList taskList = loadTasks(storage);
-        while (scanner.hasNextLine()) {
-            String command = scanner.nextLine().trim();
-            System.out.println(SEPARATOR);
+        TaskList taskList = loadTasks(storage, ui);
+        while (ui.hasNextCommand()) {
+            String command = ui.readCommand();
+            ui.showSeparator();
             try {
-                if (handleCommand(command, taskList, storage)) {
-                    System.out.println(SEPARATOR);
+                if (handleCommand(command, taskList, storage, ui)) {
+                    ui.showSeparator();
                     break;
                 }
             } catch (YourHandException exception) {
-                System.out.println(" " + exception.getMessage());
+                ui.showError(exception.getMessage());
             }
-            System.out.println(SEPARATOR);
+            ui.showSeparator();
         }
-    }
-
-    /** Prints the chatbot banner and initial greeting. */
-    private static void printWelcomeMessage() {
-        String banner = "__   __                 _   _                 _\n"
-                + "\\ \\ / /__  _   _ _ __  | | | | __ _ _ __   __| |\n"
-                + " \\ V / _ \\| | | | '__| | |_| |/ _` | '_ \\ / _` |\n"
-                + "  | | (_) | |_| | |    |  _  | (_| | | | | (_| |\n"
-                + "  |_|\\___/ \\__,_|_|    |_| |_|\\__,_|_| |_|\\__,_|";
-        System.out.println(banner);
-        System.out.println(SEPARATOR);
-        System.out.println(" Selamat Datang 早上好! YourHand 为你服务");
-        System.out.println(" 你来这干嘛 What are you here for?");
-        System.out.println(SEPARATOR);
     }
 
     /**
@@ -90,53 +74,39 @@ public class YourHand {
      * @return true when the command is {@code bye}
      * @throws YourHandException if the command is invalid
      */
-    private static boolean handleCommand(String command, TaskList taskList, Storage storage) throws YourHandException {
+    private static boolean handleCommand(String command, TaskList taskList, Storage storage, Ui ui)
+            throws YourHandException {
         if (command.equals("bye")) {
-            System.out.println(" See you never :)");
+            ui.showGoodbyeMessage();
             return true;
         }
         if (command.equals("list")) {
-            printTaskList(taskList);
+            ui.showTaskList(taskList);
             return false;
         }
         Matcher statusMatcher = STATUS_PATTERN.matcher(command);
         if (statusMatcher.matches()) {
-            updateTaskStatus(statusMatcher, taskList, storage);
+            updateTaskStatus(statusMatcher, taskList, storage, ui);
             return false;
         }
 
         Matcher deleteMatcher = DELETE_PATTERN.matcher(command);
         if (deleteMatcher.matches()) {
-            deleteTask(deleteMatcher, taskList, storage);
+            deleteTask(deleteMatcher, taskList, storage, ui);
             return false;
         }
 
         Task task = createTask(command);
-        printDuplicateTaskWarning(task, taskList);
+        printDuplicateTaskWarning(task, taskList, ui);
         taskList.add(task);
         saveTasks(taskList, storage);
-        System.out.println(" Fine, I've written this down:");
-        System.out.println("   " + task);
-        String taskWord = taskList.size() == 1 ? "task" : "tasks";
-        System.out.println(" That's " + taskList.size() + " " + taskWord + " on your plate.");
+        ui.showTaskAdded(task, taskList.size());
         return false;
     }
 
-    /** Prints all stored tasks, or an empty-list message. */
-    private static void printTaskList(TaskList taskList) throws YourHandException {
-        if (taskList.isEmpty()) {
-            System.out.println(" Your task list is empty.");
-            return;
-        }
-
-        System.out.println(" Here's your list of responsibilities:");
-        for (int taskNumber = 1; taskNumber <= taskList.size(); taskNumber++) {
-            System.out.println(" " + taskNumber + "." + taskList.getTask(taskNumber));
-        }
-    }
-
     /** Updates a task's completion status from a validated mark or unmark command. */
-    private static void updateTaskStatus(Matcher matcher, TaskList taskList, Storage storage) throws YourHandException {
+    private static void updateTaskStatus(Matcher matcher, TaskList taskList, Storage storage, Ui ui)
+            throws YourHandException {
         String taskNumberText = matcher.group(2);
         if (taskNumberText == null || taskNumberText.isBlank()) {
             throw new YourHandException("Don't make me guess — give me a task number, e.g. "
@@ -149,29 +119,21 @@ public class YourHand {
 
         Task task = taskList.getTask(taskNumber);
         boolean wasUpdated;
-        if (matcher.group(1).equals("mark")) {
+        boolean isMarkCommand = matcher.group(1).equals("mark");
+        if (isMarkCommand) {
             wasUpdated = task.markAsDone();
-            if (wasUpdated) {
-                System.out.println(" Good job for surviving. I'll mark this as done:");
-            } else {
-                System.out.println(" That task was already done. Double-checking never hurts:");
-            }
         } else {
             wasUpdated = task.markAsUndone();
-            if (wasUpdated) {
-                System.out.println(" Unmarked. Check pls:");
-            } else {
-                System.out.println(" That task was already waiting for you. No change:");
-            }
         }
         if (wasUpdated) {
             saveTasks(taskList, storage);
         }
-        System.out.println("   " + task);
+        ui.showTaskStatus(task, isMarkCommand, wasUpdated);
     }
 
     /** Removes the task specified by a validated delete command. */
-    private static void deleteTask(Matcher matcher, TaskList taskList, Storage storage) throws YourHandException {
+    private static void deleteTask(Matcher matcher, TaskList taskList, Storage storage, Ui ui)
+            throws YourHandException {
         String taskNumberText = matcher.group(1);
         if (taskNumberText == null || taskNumberText.isBlank()) {
             throw new YourHandException("Don't make me guess — give me a task number, e.g. delete 2.");
@@ -183,10 +145,7 @@ public class YourHand {
 
         Task removedTask = taskList.removeTask(taskNumber);
         saveTasks(taskList, storage);
-        System.out.println(" Poof. I've removed this task:");
-        System.out.println("   " + removedTask);
-        String taskWord = taskList.size() == 1 ? "task" : "tasks";
-        System.out.println(" That's " + taskList.size() + " " + taskWord + " left on your plate.");
+        ui.showTaskDeleted(removedTask, taskList.size());
     }
 
     /** Creates a task from a task-creation command. */
@@ -254,11 +213,10 @@ public class YourHand {
     }
 
     /** Warns when a new task duplicates an existing task description. */
-    private static void printDuplicateTaskWarning(Task task, TaskList taskList) {
+    private static void printDuplicateTaskWarning(Task task, TaskList taskList, Ui ui) {
         int existingTaskNumber = taskList.findTaskNumberByDescription(task.getDescription());
         if (existingTaskNumber != -1) {
-            System.out.println(" Heads up: task " + existingTaskNumber + " already has that description."
-                    + " I'll add this one too.");
+            ui.showDuplicateTaskWarning(existingTaskNumber);
         }
     }
 
@@ -308,14 +266,14 @@ public class YourHand {
     }
 
     /** Loads saved tasks and starts with an empty list if the data file cannot be read. */
-    private static TaskList loadTasks(Storage storage) {
+    private static TaskList loadTasks(Storage storage, Ui ui) {
         try {
             return storage.load();
         } catch (CorruptFileException exception) {
-            System.out.println(" Your saved data file looks corrupted, so I didn't load it.");
+            ui.showCorruptFileWarning();
             return new TaskList();
         } catch (IOException | SecurityException exception) {
-            System.out.println(" I couldn't load your saved tasks. Starting with a clean slate.");
+            ui.showLoadingError();
             return new TaskList();
         }
     }

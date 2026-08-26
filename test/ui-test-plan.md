@@ -1,7 +1,7 @@
 # UI Test Plan
 
 run-command: java -cp _temp/ui-test-classes YourHand
-setup-command: javac -d _temp/ui-test-classes src/main/java/YourHand.java src/main/java/tasks/*.java src/main/java/exceptions/*.java src/main/java/storage/*.java
+setup-command: javac -d _temp/ui-test-classes src/main/java/YourHand.java src/main/java/tasks/*.java src/main/java/exceptions/*.java src/main/java/storage/*.java src/main/java/ui/*.java
 before-each-command: if exist data\yourhand.txt del /q data\yourhand.txt
 working-directory: ..
 timeout-seconds: 10
