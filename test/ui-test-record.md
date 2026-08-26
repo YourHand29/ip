@@ -28,7 +28,7 @@ ____________________________________________________________
  You handed me an empty to-do. Try: todo borrow book
 ____________________________________________________________
 ____________________________________________________________
- Hmm, I don't speak that yet. Try todo, deadline, event, list, mark, unmark, delete, corrupt, editcorrupt, or bye.
+ Hmm, I don't speak that yet. Try todo, deadline, event, list, mark, unmark, delete, or bye.
 ____________________________________________________________
 ____________________________________________________________
  See you never :)
@@ -51,7 +51,7 @@ ____________________________________________________________
  You handed me an empty to-do. Try: todo borrow book
 ____________________________________________________________
 ____________________________________________________________
- Hmm, I don't speak that yet. Try todo, deadline, event, list, mark, unmark, delete, corrupt, editcorrupt, or bye.
+ Hmm, I don't speak that yet. Try todo, deadline, event, list, mark, unmark, delete, or bye.
 ____________________________________________________________
 ____________________________________________________________
  See you never :)
@@ -288,7 +288,7 @@ ____________________________________________________________
 ### Console input
 
 ```text
-deadline submit report /by Sunday
+deadline submit report /by 2026-10-18
 event team meeting /from Monday
 list
 bye
@@ -308,7 +308,7 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  Fine, I've written this down:
-   [D][ ] submit report (by: Sunday)
+   [D][ ] submit report (by: Oct 18 2026)
  That's 1 task on your plate.
 ____________________________________________________________
 ____________________________________________________________
@@ -316,7 +316,7 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  Here's your list of responsibilities:
- 1.[D][ ] submit report (by: Sunday)
+ 1.[D][ ] submit report (by: Oct 18 2026)
 ____________________________________________________________
 ____________________________________________________________
  See you never :)
@@ -337,7 +337,7 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  Fine, I've written this down:
-   [D][ ] submit report (by: Sunday)
+   [D][ ] submit report (by: Oct 18 2026)
  That's 1 task on your plate.
 ____________________________________________________________
 ____________________________________________________________
@@ -345,7 +345,7 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  Here's your list of responsibilities:
- 1.[D][ ] submit report (by: Sunday)
+ 1.[D][ ] submit report (by: Oct 18 2026)
 ____________________________________________________________
 ____________________________________________________________
  See you never :)
@@ -453,8 +453,8 @@ ____________________________________________________________
 
 ```text
 todo read book
-deadline return book /by June 6th
-event project meeting /from Aug 6th 2pm /to 4pm
+deadline return book /by 2026-06-06
+event project meeting /from 2026-08-06 /to 2026-08-07
 mark 1
 mark 2
 delete 3
@@ -481,12 +481,12 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  Fine, I've written this down:
-   [D][ ] return book (by: June 6th)
+   [D][ ] return book (by: Jun 06 2026)
  That's 2 tasks on your plate.
 ____________________________________________________________
 ____________________________________________________________
  Fine, I've written this down:
-   [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+   [E][ ] project meeting (from: Aug 06 2026 to: Aug 07 2026)
  That's 3 tasks on your plate.
 ____________________________________________________________
 ____________________________________________________________
@@ -495,17 +495,17 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  Good job for surviving. I'll mark this as done:
-   [D][X] return book (by: June 6th)
+   [D][X] return book (by: Jun 06 2026)
 ____________________________________________________________
 ____________________________________________________________
  Poof. I've removed this task:
-   [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+   [E][ ] project meeting (from: Aug 06 2026 to: Aug 07 2026)
  That's 2 tasks left on your plate.
 ____________________________________________________________
 ____________________________________________________________
  Here's your list of responsibilities:
  1.[T][X] read book
- 2.[D][X] return book (by: June 6th)
+ 2.[D][X] return book (by: Jun 06 2026)
 ____________________________________________________________
 ____________________________________________________________
  See you never :)
@@ -531,12 +531,12 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  Fine, I've written this down:
-   [D][ ] return book (by: June 6th)
+   [D][ ] return book (by: Jun 06 2026)
  That's 2 tasks on your plate.
 ____________________________________________________________
 ____________________________________________________________
  Fine, I've written this down:
-   [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+   [E][ ] project meeting (from: Aug 06 2026 to: Aug 07 2026)
  That's 3 tasks on your plate.
 ____________________________________________________________
 ____________________________________________________________
@@ -545,17 +545,17 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  Good job for surviving. I'll mark this as done:
-   [D][X] return book (by: June 6th)
+   [D][X] return book (by: Jun 06 2026)
 ____________________________________________________________
 ____________________________________________________________
  Poof. I've removed this task:
-   [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+   [E][ ] project meeting (from: Aug 06 2026 to: Aug 07 2026)
  That's 2 tasks left on your plate.
 ____________________________________________________________
 ____________________________________________________________
  Here's your list of responsibilities:
  1.[T][X] read book
- 2.[D][X] return book (by: June 6th)
+ 2.[D][X] return book (by: Jun 06 2026)
 ____________________________________________________________
 ____________________________________________________________
  See you never :)
@@ -869,8 +869,8 @@ ____________________________________________________________
 ____________________________________________________________
  Here's your list of responsibilities:
  1.[T][X] read book
- 2.[D][ ] return book (by: Sunday)
- 3.[E][X] team meeting (from: Mon 2pm to: 4pm)
+ 2.[D][ ] return book (by: Dec 02 2019 6:00pm)
+ 3.[E][X] team meeting (from: Aug 26 2026 6:00pm to: Aug 26 2026 8:00pm)
 ____________________________________________________________
 ____________________________________________________________
  See you never :)
@@ -892,8 +892,8 @@ ____________________________________________________________
 ____________________________________________________________
  Here's your list of responsibilities:
  1.[T][X] read book
- 2.[D][ ] return book (by: Sunday)
- 3.[E][X] team meeting (from: Mon 2pm to: 4pm)
+ 2.[D][ ] return book (by: Dec 02 2019 6:00pm)
+ 3.[E][X] team meeting (from: Aug 26 2026 6:00pm to: Aug 26 2026 8:00pm)
 ____________________________________________________________
 ____________________________________________________________
  See you never :)
@@ -905,8 +905,8 @@ ____________________________________________________________
 
 **Result:** PASS
 
-## Test 12: Skip malformed saved tasks and retain valid ones
-**Aim:** Confirm that corrupt saved-data lines do not crash the chatbot and do not prevent valid tasks from loading.
+## Test 12: Reject an entire corrupted data file
+**Aim:** Confirm that one malformed saved-data line prevents every task in that file from loading.
 ### Console input
 
 ```text
@@ -926,10 +926,9 @@ ____________________________________________________________
  Selamat Datang 早上好! YourHand 为你服务
  你来这干嘛 What are you here for?
 ____________________________________________________________
- I skipped 4 broken saved tasks.
+ Your saved data file looks corrupted, so I didn't load it.
 ____________________________________________________________
- Here's your list of responsibilities:
- 1.[T][X] kept task
+ Your task list is empty.
 ____________________________________________________________
 ____________________________________________________________
  See you never :)
@@ -948,10 +947,9 @@ ____________________________________________________________
  Selamat Datang 早上好! YourHand 为你服务
  你来这干嘛 What are you here for?
 ____________________________________________________________
- I skipped 4 broken saved tasks.
+ Your saved data file looks corrupted, so I didn't load it.
 ____________________________________________________________
- Here's your list of responsibilities:
- 1.[T][X] kept task
+ Your task list is empty.
 ____________________________________________________________
 ____________________________________________________________
  See you never :)
@@ -1024,87 +1022,7 @@ ____________________________________________________________
 
 **Result:** PASS
 
-## Test 14: Inspect and repair a corrupted saved task
-**Aim:** Confirm that the user can view a corrupt saved entry, see its specific problem, repair it, and restore it to the active task list.
-### Console input
-
-```text
-corrupt
-editcorrupt 1 D | 0 | return book | Sunday
-list
-bye
-```
-
-### Expected output
-
-```text
-__   __                 _   _                 _
-\ \ / /__  _   _ _ __  | | | | __ _ _ __   __| |
- \ V / _ \| | | | '__| | |_| |/ _` | '_ \ / _` |
-  | | (_) | |_| | |    |  _  | (_| | | | | (_| |
-  |_|\___/ \__,_|_|    |_| |_|\__,_|_| |_|\__,_|
-____________________________________________________________
- Selamat Datang 早上好! YourHand 为你服务
- 你来这干嘛 What are you here for?
-____________________________________________________________
- I skipped 1 broken saved task.
-____________________________________________________________
- Here's what looks broken in data/yourhand.txt:
- 1. D | 2 | return book | Sunday
-    Why: Saved task status must be 0 or 1.
- Use: editcorrupt ENTRY_NUMBER CORRECTED_FILE_LINE
-____________________________________________________________
-____________________________________________________________
- Fixed and restored this task:
-   [D][ ] return book (by: Sunday)
-____________________________________________________________
-____________________________________________________________
- Here's your list of responsibilities:
- 1.[D][ ] return book (by: Sunday)
-____________________________________________________________
-____________________________________________________________
- See you never :)
-____________________________________________________________
-```
-
-### Actual output
-
-```text
-__   __                 _   _                 _
-\ \ / /__  _   _ _ __  | | | | __ _ _ __   __| |
- \ V / _ \| | | | '__| | |_| |/ _` | '_ \ / _` |
-  | | (_) | |_| | |    |  _  | (_| | | | | (_| |
-  |_|\___/ \__,_|_|    |_| |_|\__,_|_| |_|\__,_|
-____________________________________________________________
- Selamat Datang 早上好! YourHand 为你服务
- 你来这干嘛 What are you here for?
-____________________________________________________________
- I skipped 1 broken saved task.
-____________________________________________________________
- Here's what looks broken in data/yourhand.txt:
- 1. D | 2 | return book | Sunday
-    Why: Saved task status must be 0 or 1.
- Use: editcorrupt ENTRY_NUMBER CORRECTED_FILE_LINE
-____________________________________________________________
-____________________________________________________________
- Fixed and restored this task:
-   [D][ ] return book (by: Sunday)
-____________________________________________________________
-____________________________________________________________
- Here's your list of responsibilities:
- 1.[D][ ] return book (by: Sunday)
-____________________________________________________________
-____________________________________________________________
- See you never :)
-____________________________________________________________
-
-```
-
-**Exit code:** 0
-
-**Result:** PASS
-
-## Test 15: Remind the user about duplicate task descriptions
+## Test 14: Remind the user about duplicate task descriptions
 **Aim:** Confirm that adding a duplicate description displays a reminder while retaining both tasks.
 ### Console input
 
@@ -1175,6 +1093,221 @@ ____________________________________________________________
  Here's your list of responsibilities:
  1.[T][ ] read book
  2.[T][ ] read book
+____________________________________________________________
+____________________________________________________________
+ See you never :)
+____________________________________________________________
+
+```
+
+**Exit code:** 0
+
+**Result:** PASS
+
+## Test 15: Accept supported date and time formats
+**Aim:** Confirm that slash-format and ISO-format 24-hour times are parsed, displayed in a friendly format, and retained in the task list.
+### Console input
+
+```text
+deadline return book /by 2/12/2019 1800
+event project meeting /from 2026-08-26 18:00 /to 2026-08-26 2000
+list
+bye
+```
+
+### Expected output
+
+```text
+__   __                 _   _                 _
+\ \ / /__  _   _ _ __  | | | | __ _ _ __   __| |
+ \ V / _ \| | | | '__| | |_| |/ _` | '_ \ / _` |
+  | | (_) | |_| | |    |  _  | (_| | | | | (_| |
+  |_|\___/ \__,_|_|    |_| |_|\__,_|_| |_|\__,_|
+____________________________________________________________
+ Selamat Datang 早上好! YourHand 为你服务
+ 你来这干嘛 What are you here for?
+____________________________________________________________
+____________________________________________________________
+ Fine, I've written this down:
+   [D][ ] return book (by: Dec 02 2019 6:00pm)
+ That's 1 task on your plate.
+____________________________________________________________
+____________________________________________________________
+ Fine, I've written this down:
+   [E][ ] project meeting (from: Aug 26 2026 6:00pm to: Aug 26 2026 8:00pm)
+ That's 2 tasks on your plate.
+____________________________________________________________
+____________________________________________________________
+ Here's your list of responsibilities:
+ 1.[D][ ] return book (by: Dec 02 2019 6:00pm)
+ 2.[E][ ] project meeting (from: Aug 26 2026 6:00pm to: Aug 26 2026 8:00pm)
+____________________________________________________________
+____________________________________________________________
+ See you never :)
+____________________________________________________________
+```
+
+### Actual output
+
+```text
+__   __                 _   _                 _
+\ \ / /__  _   _ _ __  | | | | __ _ _ __   __| |
+ \ V / _ \| | | | '__| | |_| |/ _` | '_ \ / _` |
+  | | (_) | |_| | |    |  _  | (_| | | | | (_| |
+  |_|\___/ \__,_|_|    |_| |_|\__,_|_| |_|\__,_|
+____________________________________________________________
+ Selamat Datang 早上好! YourHand 为你服务
+ 你来这干嘛 What are you here for?
+____________________________________________________________
+____________________________________________________________
+ Fine, I've written this down:
+   [D][ ] return book (by: Dec 02 2019 6:00pm)
+ That's 1 task on your plate.
+____________________________________________________________
+____________________________________________________________
+ Fine, I've written this down:
+   [E][ ] project meeting (from: Aug 26 2026 6:00pm to: Aug 26 2026 8:00pm)
+ That's 2 tasks on your plate.
+____________________________________________________________
+____________________________________________________________
+ Here's your list of responsibilities:
+ 1.[D][ ] return book (by: Dec 02 2019 6:00pm)
+ 2.[E][ ] project meeting (from: Aug 26 2026 6:00pm to: Aug 26 2026 8:00pm)
+____________________________________________________________
+____________________________________________________________
+ See you never :)
+____________________________________________________________
+
+```
+
+**Exit code:** 0
+
+**Result:** PASS
+
+## Test 16: Reject invalid and out-of-order task dates
+**Aim:** Confirm that impossible calendar dates and events ending before they start are rejected without changing the task list.
+### Console input
+
+```text
+deadline impossible /by 2026-02-30
+event backwards /from 2026-08-27 /to 2026-08-26
+list
+bye
+```
+
+### Expected output
+
+```text
+__   __                 _   _                 _
+\ \ / /__  _   _ _ __  | | | | __ _ _ __   __| |
+ \ V / _ \| | | | '__| | |_| |/ _` | '_ \ / _` |
+  | | (_) | |_| | |    |  _  | (_| | | | | (_| |
+  |_|\___/ \__,_|_|    |_| |_|\__,_|_| |_|\__,_|
+____________________________________________________________
+ Selamat Datang 早上好! YourHand 为你服务
+ 你来这干嘛 What are you here for?
+____________________________________________________________
+____________________________________________________________
+ Use yyyy-M-d, yyyy-M-d HHmm, yyyy-M-d HH:mm, or d/M/yyyy HHmm.
+____________________________________________________________
+____________________________________________________________
+ Your event cannot end before it starts.
+____________________________________________________________
+____________________________________________________________
+ Your task list is empty.
+____________________________________________________________
+____________________________________________________________
+ See you never :)
+____________________________________________________________
+```
+
+### Actual output
+
+```text
+__   __                 _   _                 _
+\ \ / /__  _   _ _ __  | | | | __ _ _ __   __| |
+ \ V / _ \| | | | '__| | |_| |/ _` | '_ \ / _` |
+  | | (_) | |_| | |    |  _  | (_| | | | | (_| |
+  |_|\___/ \__,_|_|    |_| |_|\__,_|_| |_|\__,_|
+____________________________________________________________
+ Selamat Datang 早上好! YourHand 为你服务
+ 你来这干嘛 What are you here for?
+____________________________________________________________
+____________________________________________________________
+ Use yyyy-M-d, yyyy-M-d HHmm, yyyy-M-d HH:mm, or d/M/yyyy HHmm.
+____________________________________________________________
+____________________________________________________________
+ Your event cannot end before it starts.
+____________________________________________________________
+____________________________________________________________
+ Your task list is empty.
+____________________________________________________________
+____________________________________________________________
+ See you never :)
+____________________________________________________________
+
+```
+
+**Exit code:** 0
+
+**Result:** PASS
+
+## Test 17: Accept unpadded ISO month and day values
+**Aim:** Confirm that valid ISO-style dates with one-digit months or days are accepted while still being displayed in a consistent friendly format.
+### Console input
+
+```text
+event please /from 2222-2-22 /to 3333-3-3
+list
+bye
+```
+
+### Expected output
+
+```text
+__   __                 _   _                 _
+\ \ / /__  _   _ _ __  | | | | __ _ _ __   __| |
+ \ V / _ \| | | | '__| | |_| |/ _` | '_ \ / _` |
+  | | (_) | |_| | |    |  _  | (_| | | | | (_| |
+  |_|\___/ \__,_|_|    |_| |_|\__,_|_| |_|\__,_|
+____________________________________________________________
+ Selamat Datang 早上好! YourHand 为你服务
+ 你来这干嘛 What are you here for?
+____________________________________________________________
+____________________________________________________________
+ Fine, I've written this down:
+   [E][ ] please (from: Feb 22 2222 to: Mar 03 3333)
+ That's 1 task on your plate.
+____________________________________________________________
+____________________________________________________________
+ Here's your list of responsibilities:
+ 1.[E][ ] please (from: Feb 22 2222 to: Mar 03 3333)
+____________________________________________________________
+____________________________________________________________
+ See you never :)
+____________________________________________________________
+```
+
+### Actual output
+
+```text
+__   __                 _   _                 _
+\ \ / /__  _   _ _ __  | | | | __ _ _ __   __| |
+ \ V / _ \| | | | '__| | |_| |/ _` | '_ \ / _` |
+  | | (_) | |_| | |    |  _  | (_| | | | | (_| |
+  |_|\___/ \__,_|_|    |_| |_|\__,_|_| |_|\__,_|
+____________________________________________________________
+ Selamat Datang 早上好! YourHand 为你服务
+ 你来这干嘛 What are you here for?
+____________________________________________________________
+____________________________________________________________
+ Fine, I've written this down:
+   [E][ ] please (from: Feb 22 2222 to: Mar 03 3333)
+ That's 1 task on your plate.
+____________________________________________________________
+____________________________________________________________
+ Here's your list of responsibilities:
+ 1.[E][ ] please (from: Feb 22 2222 to: Mar 03 3333)
 ____________________________________________________________
 ____________________________________________________________
  See you never :)

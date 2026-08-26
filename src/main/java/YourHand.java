@@ -1,12 +1,19 @@
+import exceptions.CorruptFileException;
 import exceptions.YourHandException;
 import tasks.Deadline;
 import tasks.Event;
 import tasks.Task;
+import tasks.TaskDateTime;
 import tasks.TaskList;
 import tasks.Todo;
 import storage.Storage;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -23,7 +30,17 @@ public class YourHand {
             "^event\\s+(.+?)\\s+/from\\s+(.+?)\\s+/to\\s+(.+)$");
     private static final Pattern STATUS_PATTERN = Pattern.compile("^(mark|unmark)(?:\\s+(.+))?$");
     private static final Pattern DELETE_PATTERN = Pattern.compile("^delete(?:\\s+(.+))?$");
-    private static final Pattern EDIT_CORRUPT_PATTERN = Pattern.compile("^editcorrupt(?:\\s+(.+?))?(?:\\s+(.+))?$");
+    private static final DateTimeFormatter ISO_DATE_FORMAT = DateTimeFormatter.ofPattern("uuuu-M-d")
+            .withResolverStyle(ResolverStyle.STRICT);
+    private static final DateTimeFormatter ISO_COMPACT_DATE_TIME_FORMAT =
+            DateTimeFormatter.ofPattern("uuuu-M-d HHmm")
+                    .withResolverStyle(ResolverStyle.STRICT);
+    private static final DateTimeFormatter ISO_COLON_DATE_TIME_FORMAT =
+            DateTimeFormatter.ofPattern("uuuu-M-d HH:mm")
+                    .withResolverStyle(ResolverStyle.STRICT);
+    private static final DateTimeFormatter SLASH_DATE_TIME_FORMAT =
+            DateTimeFormatter.ofPattern("d/M/uuuu HHmm")
+                    .withResolverStyle(ResolverStyle.STRICT);
 
     /**
      * Starts the YourHand command-line application.
@@ -35,9 +52,7 @@ public class YourHand {
 
         Scanner scanner = new Scanner(System.in);
         Storage storage = new Storage();
-        Storage.LoadResult loadResult = loadTasks(storage);
-        TaskList taskList = loadResult.taskList();
-        printSkippedTaskWarning(loadResult.skippedTaskCount());
+        TaskList taskList = loadTasks(storage);
         while (scanner.hasNextLine()) {
             String command = scanner.nextLine().trim();
             System.out.println(SEPARATOR);
@@ -84,17 +99,6 @@ public class YourHand {
             printTaskList(taskList);
             return false;
         }
-        if (command.equals("corrupt")) {
-            printCorruptedTasks(storage);
-            return false;
-        }
-
-        Matcher editCorruptMatcher = EDIT_CORRUPT_PATTERN.matcher(command);
-        if (editCorruptMatcher.matches()) {
-            editCorruptedTask(editCorruptMatcher, taskList, storage);
-            return false;
-        }
-
         Matcher statusMatcher = STATUS_PATTERN.matcher(command);
         if (statusMatcher.matches()) {
             updateTaskStatus(statusMatcher, taskList, storage);
@@ -131,45 +135,6 @@ public class YourHand {
         }
     }
 
-    /** Lists corrupt saved entries and their repair instructions. */
-    private static void printCorruptedTasks(Storage storage) {
-        if (storage.getCorruptedTasks().isEmpty()) {
-            System.out.println(" Nothing in the saved file needs fixing right now.");
-            return;
-        }
-
-        System.out.println(" Here's what looks broken in data/yourhand.txt:");
-        for (int index = 0; index < storage.getCorruptedTasks().size(); index++) {
-            Storage.CorruptedTask corruptedTask = storage.getCorruptedTasks().get(index);
-            System.out.println(" " + (index + 1) + ". " + corruptedTask.taskLine());
-            System.out.println("    Why: " + corruptedTask.reason());
-        }
-        System.out.println(" Use: editcorrupt ENTRY_NUMBER CORRECTED_FILE_LINE");
-    }
-
-    /** Repairs a corrupt saved entry and adds the reconstructed task to the task list. */
-    private static void editCorruptedTask(Matcher matcher, TaskList taskList, Storage storage)
-            throws YourHandException {
-        String entryNumberText = matcher.group(1);
-        String correctedLine = matcher.group(2);
-        if (entryNumberText == null || correctedLine == null || correctedLine.isBlank()) {
-            throw new YourHandException("Try: editcorrupt 1 T | 0 | read book");
-        }
-
-        int entryNumber = parseNumber(entryNumberText, "Corrupt entry numbers are whole numbers.");
-        Task repairedTask;
-        try {
-            repairedTask = storage.repairCorruptedTask(entryNumber, correctedLine);
-        } catch (IllegalArgumentException exception) {
-            throw new YourHandException("That repair still looks wrong: " + exception.getMessage());
-        }
-        printDuplicateTaskWarning(repairedTask, taskList);
-        taskList.add(repairedTask);
-        saveTasks(taskList, storage);
-        System.out.println(" Fixed and restored this task:");
-        System.out.println("   " + repairedTask);
-    }
-
     /** Updates a task's completion status from a validated mark or unmark command. */
     private static void updateTaskStatus(Matcher matcher, TaskList taskList, Storage storage) throws YourHandException {
         String taskNumberText = matcher.group(2);
@@ -178,7 +143,9 @@ public class YourHand {
                     + matcher.group(1) + " 2.");
         }
 
-        int taskNumber = parseNumber(taskNumberText, "Task numbers are whole numbers, not creative writing.");
+        int taskNumber = parseNumber(
+                taskNumberText,
+                "Task numbers are whole numbers, not creative writing.");
 
         Task task = taskList.getTask(taskNumber);
         boolean wasUpdated;
@@ -210,7 +177,9 @@ public class YourHand {
             throw new YourHandException("Don't make me guess — give me a task number, e.g. delete 2.");
         }
 
-        int taskNumber = parseNumber(taskNumberText, "Task numbers are whole numbers, not creative writing.");
+        int taskNumber = parseNumber(
+                taskNumberText,
+                "Task numbers are whole numbers, not creative writing.");
 
         Task removedTask = taskList.removeTask(taskNumber);
         saveTasks(taskList, storage);
@@ -228,14 +197,18 @@ public class YourHand {
             if (description == null || description.isBlank()) {
                 throw new YourHandException("You handed me an empty to-do. Try: todo borrow book");
             }
-            return new Todo(validateTaskText(description, "You handed me an empty to-do. Try: todo borrow book"));
+            return new Todo(
+                    validateTaskText(
+                            description,
+                            "You handed me an empty to-do. Try: todo borrow book"));
         }
 
         Matcher deadlineMatcher = DEADLINE_PATTERN.matcher(command);
         if (deadlineMatcher.matches()) {
             return new Deadline(
                     validateTaskText(deadlineMatcher.group(1), "Your deadline needs a description."),
-                    validateTaskText(deadlineMatcher.group(2), "Your deadline needs a due date or time."));
+                    parseTaskDateTime(validateTaskText(deadlineMatcher.group(2),
+                            "Your deadline needs a due date.")));
         }
         if (isCommand(command, "deadline")) {
             throw new YourHandException("Bro due when please. Try: deadline DESCRIPTION /by DATE_OR_TIME");
@@ -243,17 +216,27 @@ public class YourHand {
 
         Matcher eventMatcher = EVENT_PATTERN.matcher(command);
         if (eventMatcher.matches()) {
-            return new Event(
-                    validateTaskText(eventMatcher.group(1), "Your event needs a description."),
-                    validateTaskText(eventMatcher.group(2), "Your event needs a start time."),
-                    validateTaskText(eventMatcher.group(3), "Your event needs an end time."));
+            String description = validateTaskText(
+                    eventMatcher.group(1), "Your event needs a description.");
+            TaskDateTime from = parseTaskDateTime(
+                    validateTaskText(
+                            eventMatcher.group(2),
+                            "Your event needs a start date."));
+            TaskDateTime to = parseTaskDateTime(
+                    validateTaskText(
+                            eventMatcher.group(3),
+                            "Your event needs an end date."));
+            if (to.getValue().isBefore(from.getValue())) {
+                throw new YourHandException("Your event cannot end before it starts.");
+            }
+            return new Event(description, from, to);
         }
         if (isCommand(command, "event")) {
             throw new YourHandException("Walao when the even happening. Try: event DESCRIPTION /from START /to END");
         }
 
         throw new YourHandException("Hmm, I don't speak that yet. Try todo, deadline, event, list, mark, "
-                + "unmark, delete, corrupt, editcorrupt, or bye.");
+                + "unmark, delete, or bye.");
     }
 
     /** Returns whether a command begins with a command word. */
@@ -291,6 +274,30 @@ public class YourHand {
         return trimmedText;
     }
 
+    /** Parses a supported task date or date-time and presents parse errors as chatbot errors. */
+    private static TaskDateTime parseTaskDateTime(String dateText) throws YourHandException {
+        try {
+            return new TaskDateTime(LocalDate.parse(dateText, ISO_DATE_FORMAT));
+        } catch (DateTimeParseException exception) {
+            return parseTaskDateTimeWithTime(dateText);
+        }
+    }
+
+    /** Parses one of the supported date-time formats. */
+    private static TaskDateTime parseTaskDateTimeWithTime(String dateText) throws YourHandException {
+        for (DateTimeFormatter formatter : List.of(
+                ISO_COMPACT_DATE_TIME_FORMAT,
+                ISO_COLON_DATE_TIME_FORMAT,
+                SLASH_DATE_TIME_FORMAT)) {
+            try {
+                return new TaskDateTime(LocalDateTime.parse(dateText, formatter));
+            } catch (DateTimeParseException exception) {
+                // Try the next documented format.
+            }
+        }
+        throw new YourHandException("Use yyyy-M-d, yyyy-M-d HHmm, yyyy-M-d HH:mm, or d/M/yyyy HHmm.");
+    }
+
     /** Saves the current list and reports any file-writing problem to the user. */
     private static void saveTasks(TaskList taskList, Storage storage) throws YourHandException {
         try {
@@ -301,21 +308,15 @@ public class YourHand {
     }
 
     /** Loads saved tasks and starts with an empty list if the data file cannot be read. */
-    private static Storage.LoadResult loadTasks(Storage storage) {
+    private static TaskList loadTasks(Storage storage) {
         try {
             return storage.load();
+        } catch (CorruptFileException exception) {
+            System.out.println(" Your saved data file looks corrupted, so I didn't load it.");
+            return new TaskList();
         } catch (IOException | SecurityException exception) {
             System.out.println(" I couldn't load your saved tasks. Starting with a clean slate.");
-            return new Storage.LoadResult(new TaskList(), List.of());
+            return new TaskList();
         }
-    }
-
-    /** Informs the user when malformed saved entries were ignored during startup. */
-    private static void printSkippedTaskWarning(int skippedTaskCount) {
-        if (skippedTaskCount == 0) {
-            return;
-        }
-        String taskWord = skippedTaskCount == 1 ? "task" : "tasks";
-        System.out.println(" I skipped " + skippedTaskCount + " broken saved " + taskWord + ".");
     }
 }
