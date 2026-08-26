@@ -183,7 +183,7 @@ Confirm that a malformed event does not alter an already stored deadline.
 ### Input
 
 ```text
-deadline submit report /by Sunday
+deadline submit report /by 2026-10-18
 event team meeting /from Monday
 list
 bye
@@ -203,7 +203,7 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  Fine, I've written this down:
-   [D][ ] submit report (by: Sunday)
+   [D][ ] submit report (by: Oct 18 2026)
  That's 1 task on your plate.
 ____________________________________________________________
 ____________________________________________________________
@@ -211,7 +211,7 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  Here's your list of responsibilities:
- 1.[D][ ] submit report (by: Sunday)
+ 1.[D][ ] submit report (by: Oct 18 2026)
 ____________________________________________________________
 ____________________________________________________________
  See you never :)
@@ -281,8 +281,8 @@ Confirm that deleting a task removes only that task, preserves the remaining tas
 
 ```text
 todo read book
-deadline return book /by June 6th
-event project meeting /from Aug 6th 2pm /to 4pm
+deadline return book /by 2026-06-06
+event project meeting /from 2026-08-06 /to 2026-08-07
 mark 1
 mark 2
 delete 3
@@ -309,12 +309,12 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  Fine, I've written this down:
-   [D][ ] return book (by: June 6th)
+   [D][ ] return book (by: Jun 06 2026)
  That's 2 tasks on your plate.
 ____________________________________________________________
 ____________________________________________________________
  Fine, I've written this down:
-   [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+   [E][ ] project meeting (from: Aug 06 2026 to: Aug 07 2026)
  That's 3 tasks on your plate.
 ____________________________________________________________
 ____________________________________________________________
@@ -323,17 +323,17 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  Good job for surviving. I'll mark this as done:
-   [D][X] return book (by: June 6th)
+   [D][X] return book (by: Jun 06 2026)
 ____________________________________________________________
 ____________________________________________________________
  Poof. I've removed this task:
-   [E][ ] project meeting (from: Aug 6th 2pm to: 4pm)
+   [E][ ] project meeting (from: Aug 06 2026 to: Aug 07 2026)
  That's 2 tasks left on your plate.
 ____________________________________________________________
 ____________________________________________________________
  Here's your list of responsibilities:
  1.[T][X] read book
- 2.[D][X] return book (by: June 6th)
+ 2.[D][X] return book (by: Jun 06 2026)
 ____________________________________________________________
 ____________________________________________________________
  See you never :)
@@ -512,7 +512,7 @@ Confirm that a fresh program session restores the task type, description, date o
 ### Setup
 
 ```powershell
-powershell -NoProfile -Command "New-Item -ItemType Directory -Force data | Out-Null; [System.IO.File]::WriteAllLines('data/yourhand.txt', @('T | 1 | read book', 'D | 0 | return book | Sunday', 'E | 1 | team meeting | Mon 2pm | 4pm'))"
+powershell -NoProfile -Command "New-Item -ItemType Directory -Force data | Out-Null; [System.IO.File]::WriteAllLines('data/yourhand.txt', @('T | 1 | read book', 'D | 0 | return book | 2019-12-02T18:00', 'E | 1 | team meeting | 2026-08-26T18:00 | 2026-08-26T20:00'))"
 ```
 
 ### Input
@@ -537,8 +537,8 @@ ____________________________________________________________
 ____________________________________________________________
  Here's your list of responsibilities:
  1.[T][X] read book
- 2.[D][ ] return book (by: Sunday)
- 3.[E][X] team meeting (from: Mon 2pm to: 4pm)
+ 2.[D][ ] return book (by: Dec 02 2019 6:00pm)
+ 3.[E][X] team meeting (from: Aug 26 2026 6:00pm to: Aug 26 2026 8:00pm)
 ____________________________________________________________
 ____________________________________________________________
  See you never :)
@@ -554,7 +554,7 @@ Confirm that corrupt saved-data lines do not crash the chatbot and do not preven
 ### Setup
 
 ```powershell
-powershell -NoProfile -Command "New-Item -ItemType Directory -Force data | Out-Null; [System.IO.File]::WriteAllLines('data/yourhand.txt', @('T | 1 | kept task', 'D | 2 | bad status | Monday', 'E | 0 | missing end | Tuesday', 'T | 0 | extra field | unexpected', 'Q | 0 | unknown type'))"
+powershell -NoProfile -Command "New-Item -ItemType Directory -Force data | Out-Null; [System.IO.File]::WriteAllLines('data/yourhand.txt', @('T | 1 | kept task', 'D | 0 | bad date | 2026-02-30', 'E | 0 | backwards event | 2026-08-27 | 2026-08-26', 'T | 0 | extra field | unexpected', 'Q | 0 | unknown type'))"
 ```
 
 ### Input
@@ -632,14 +632,14 @@ Confirm that the user can view a corrupt saved entry, see its specific problem, 
 ### Setup
 
 ```powershell
-powershell -NoProfile -Command "New-Item -ItemType Directory -Force data | Out-Null; Set-Content -Path data/yourhand.txt -Value 'D | 2 | return book | Sunday'"
+powershell -NoProfile -Command "New-Item -ItemType Directory -Force data | Out-Null; Set-Content -Path data/yourhand.txt -Value 'D | 2 | return book | 2026-10-19'"
 ```
 
 ### Input
 
 ```text
 corrupt
-editcorrupt 1 D | 0 | return book | Sunday
+editcorrupt 1 D | 0 | return book | 2026-10-19
 list
 bye
 ```
@@ -659,17 +659,17 @@ ____________________________________________________________
  I skipped 1 broken saved task.
 ____________________________________________________________
  Here's what looks broken in data/yourhand.txt:
- 1. D | 2 | return book | Sunday
+ 1. D | 2 | return book | 2026-10-19
     Why: Saved task status must be 0 or 1.
  Use: editcorrupt ENTRY_NUMBER CORRECTED_FILE_LINE
 ____________________________________________________________
 ____________________________________________________________
  Fixed and restored this task:
-   [D][ ] return book (by: Sunday)
+   [D][ ] return book (by: Oct 19 2026)
 ____________________________________________________________
 ____________________________________________________________
  Here's your list of responsibilities:
- 1.[D][ ] return book (by: Sunday)
+ 1.[D][ ] return book (by: Oct 19 2026)
 ____________________________________________________________
 ____________________________________________________________
  See you never :)
@@ -718,6 +718,134 @@ ____________________________________________________________
  Here's your list of responsibilities:
  1.[T][ ] read book
  2.[T][ ] read book
+____________________________________________________________
+____________________________________________________________
+ See you never :)
+____________________________________________________________
+```
+
+## Test case: Accept supported date and time formats
+
+### Aim
+
+Confirm that slash-format and ISO-format 24-hour times are parsed, displayed in a friendly format, and retained in the task list.
+
+### Input
+
+```text
+deadline return book /by 2/12/2019 1800
+event project meeting /from 2026-08-26 18:00 /to 2026-08-26 2000
+list
+bye
+```
+
+### Expected output
+
+```text
+__   __                 _   _                 _
+\ \ / /__  _   _ _ __  | | | | __ _ _ __   __| |
+ \ V / _ \| | | | '__| | |_| |/ _` | '_ \ / _` |
+  | | (_) | |_| | |    |  _  | (_| | | | | (_| |
+  |_|\___/ \__,_|_|    |_| |_|\__,_|_| |_|\__,_|
+____________________________________________________________
+ Selamat Datang 早上好! YourHand 为你服务
+ 你来这干嘛 What are you here for?
+____________________________________________________________
+____________________________________________________________
+ Fine, I've written this down:
+   [D][ ] return book (by: Dec 02 2019 6:00pm)
+ That's 1 task on your plate.
+____________________________________________________________
+____________________________________________________________
+ Fine, I've written this down:
+   [E][ ] project meeting (from: Aug 26 2026 6:00pm to: Aug 26 2026 8:00pm)
+ That's 2 tasks on your plate.
+____________________________________________________________
+____________________________________________________________
+ Here's your list of responsibilities:
+ 1.[D][ ] return book (by: Dec 02 2019 6:00pm)
+ 2.[E][ ] project meeting (from: Aug 26 2026 6:00pm to: Aug 26 2026 8:00pm)
+____________________________________________________________
+____________________________________________________________
+ See you never :)
+____________________________________________________________
+```
+
+## Test case: Reject invalid and out-of-order task dates
+
+### Aim
+
+Confirm that impossible calendar dates and events ending before they start are rejected without changing the task list.
+
+### Input
+
+```text
+deadline impossible /by 2026-02-30
+event backwards /from 2026-08-27 /to 2026-08-26
+list
+bye
+```
+
+### Expected output
+
+```text
+__   __                 _   _                 _
+\ \ / /__  _   _ _ __  | | | | __ _ _ __   __| |
+ \ V / _ \| | | | '__| | |_| |/ _` | '_ \ / _` |
+  | | (_) | |_| | |    |  _  | (_| | | | | (_| |
+  |_|\___/ \__,_|_|    |_| |_|\__,_|_| |_|\__,_|
+____________________________________________________________
+ Selamat Datang 早上好! YourHand 为你服务
+ 你来这干嘛 What are you here for?
+____________________________________________________________
+____________________________________________________________
+ Use yyyy-M-d, yyyy-M-d HHmm, yyyy-M-d HH:mm, or d/M/yyyy HHmm.
+____________________________________________________________
+____________________________________________________________
+ Your event cannot end before it starts.
+____________________________________________________________
+____________________________________________________________
+ Your task list is empty.
+____________________________________________________________
+____________________________________________________________
+ See you never :)
+____________________________________________________________
+```
+
+## Test case: Accept unpadded ISO month and day values
+
+### Aim
+
+Confirm that valid ISO-style dates with one-digit months or days are accepted while still being displayed in a consistent friendly format.
+
+### Input
+
+```text
+event please /from 2222-2-22 /to 3333-3-3
+list
+bye
+```
+
+### Expected output
+
+```text
+__   __                 _   _                 _
+\ \ / /__  _   _ _ __  | | | | __ _ _ __   __| |
+ \ V / _ \| | | | '__| | |_| |/ _` | '_ \ / _` |
+  | | (_) | |_| | |    |  _  | (_| | | | | (_| |
+  |_|\___/ \__,_|_|    |_| |_|\__,_|_| |_|\__,_|
+____________________________________________________________
+ Selamat Datang 早上好! YourHand 为你服务
+ 你来这干嘛 What are you here for?
+____________________________________________________________
+____________________________________________________________
+ Fine, I've written this down:
+   [E][ ] please (from: Feb 22 2222 to: Mar 03 3333)
+ That's 1 task on your plate.
+____________________________________________________________
+____________________________________________________________
+ Here's your list of responsibilities:
+ 1.[E][ ] please (from: Feb 22 2222 to: Mar 03 3333)
 ____________________________________________________________
 ____________________________________________________________
  See you never :)

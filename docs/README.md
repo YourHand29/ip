@@ -22,18 +22,20 @@ todo borrow book
 
 ### Add a deadline
 
-Use `deadline DESCRIPTION /by DATE_OR_TIME` for a task due by a date or time.
+Use `deadline DESCRIPTION /by DATE_OR_TIME` for a task due on a date or at a time.
+
+Accepted formats are `yyyy-M-d`, `yyyy-M-d HHmm`, `yyyy-M-d HH:mm`, and `d/M/yyyy HHmm`. Zero-padding the month or day is optional.
 
 ```text
-deadline submit report /by Sunday 5pm
+deadline submit report /by 2/12/2019 1800
 ```
 
 ### Add an event
 
-Use `event DESCRIPTION /from START /to END` for a task with a start and end time.
+Use `event DESCRIPTION /from DATE_OR_TIME /to DATE_OR_TIME` for a task with a start and end date or time.
 
 ```text
-event project meeting /from Monday 2pm /to 4pm
+event project meeting /from 2026-08-26 18:00 /to 2026-08-26 2000
 ```
 
 ### List tasks
@@ -83,7 +85,7 @@ corrupt
 Use `editcorrupt ENTRY_NUMBER CORRECTED_FILE_LINE` to replace one displayed corrupt entry. The corrected line must use the data-file format.
 
 ```text
-editcorrupt 1 D | 0 | return book | Sunday
+editcorrupt 1 D | 0 | return book | 2026-10-19
 ```
 
 The repaired task is added back to your task list and saved immediately.
@@ -100,11 +102,11 @@ bye
 
 YourHand keeps running after an invalid command. It reports a message explaining what is missing or invalid, and the existing task list is unchanged. For example, `todo` needs a description, and `mark one` needs a whole-number task number.
 
-The `|` character is reserved for the saved-data format and cannot be used in task text. If the saved file contains malformed task entries, YourHand skips those entries and reports how many were ignored while still loading valid tasks.
+The `|` character is reserved for the saved-data format and cannot be used in task text. Dates and times must be real values in one of the documented formats. If the saved file contains malformed task entries, YourHand skips those entries and reports how many were ignored while still loading valid tasks.
 
 When adding a task with the same description as an existing task, YourHand shows a reminder but still adds it.
 
 ## Limitations
 
 - Tasks are saved automatically in `data/yourhand.txt` and restored when YourHand starts.
-- Dates and times are treated as text; YourHand does not validate or sort them.
+- Deadline and event dates and times are validated and displayed in a friendly format.

@@ -3,6 +3,7 @@ package storage;
 import tasks.Deadline;
 import tasks.Event;
 import tasks.Task;
+import tasks.TaskDateTime;
 import tasks.TaskList;
 import tasks.Todo;
 
@@ -10,6 +11,9 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -100,14 +104,37 @@ public class Storage {
         validateFields(fields);
         Task task = switch (fields[0]) {
         case "T" -> new Todo(fields[2]);
-        case "D" -> new Deadline(fields[2], fields[3]);
-        case "E" -> new Event(fields[2], fields[3], fields[4]);
+        case "D" -> new Deadline(fields[2], parseTaskDateTime(fields[3]));
+        case "E" -> parseEvent(fields);
         default -> throw new IllegalArgumentException("Unknown task type in saved data.");
         };
         if (fields[1].equals("1")) {
             task.markAsDone();
         }
         return task;
+    }
+
+    /** Parses an ISO task date or date-time from the data file. */
+    private TaskDateTime parseTaskDateTime(String dateText) {
+        try {
+            return new TaskDateTime(LocalDate.parse(dateText));
+        } catch (DateTimeParseException exception) {
+            try {
+                return new TaskDateTime(LocalDateTime.parse(dateText));
+            } catch (DateTimeParseException dateTimeException) {
+                throw new IllegalArgumentException("Saved task date must use ISO date or date-time format.");
+            }
+        }
+    }
+
+    /** Reconstructs an event while ensuring its end date does not precede its start date. */
+    private Event parseEvent(String[] fields) {
+        TaskDateTime from = parseTaskDateTime(fields[3]);
+        TaskDateTime to = parseTaskDateTime(fields[4]);
+        if (to.getValue().isBefore(from.getValue())) {
+            throw new IllegalArgumentException("Saved event cannot end before it starts.");
+        }
+        return new Event(fields[2], from, to);
     }
 
     /** Validates a split data-file line before its fields are accessed. */

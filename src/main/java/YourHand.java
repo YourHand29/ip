@@ -2,11 +2,17 @@ import exceptions.YourHandException;
 import tasks.Deadline;
 import tasks.Event;
 import tasks.Task;
+import tasks.TaskDateTime;
 import tasks.TaskList;
 import tasks.Todo;
 import storage.Storage;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.List;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -23,7 +29,19 @@ public class YourHand {
             "^event\\s+(.+?)\\s+/from\\s+(.+?)\\s+/to\\s+(.+)$");
     private static final Pattern STATUS_PATTERN = Pattern.compile("^(mark|unmark)(?:\\s+(.+))?$");
     private static final Pattern DELETE_PATTERN = Pattern.compile("^delete(?:\\s+(.+))?$");
-    private static final Pattern EDIT_CORRUPT_PATTERN = Pattern.compile("^editcorrupt(?:\\s+(.+?))?(?:\\s+(.+))?$");
+    private static final Pattern EDIT_CORRUPT_PATTERN = Pattern.compile(
+            "^editcorrupt(?:\\s+(.+?))?(?:\\s+(.+))?$");
+    private static final DateTimeFormatter ISO_DATE_FORMAT = DateTimeFormatter.ofPattern("uuuu-M-d")
+            .withResolverStyle(ResolverStyle.STRICT);
+    private static final DateTimeFormatter ISO_COMPACT_DATE_TIME_FORMAT =
+            DateTimeFormatter.ofPattern("uuuu-M-d HHmm")
+                    .withResolverStyle(ResolverStyle.STRICT);
+    private static final DateTimeFormatter ISO_COLON_DATE_TIME_FORMAT =
+            DateTimeFormatter.ofPattern("uuuu-M-d HH:mm")
+                    .withResolverStyle(ResolverStyle.STRICT);
+    private static final DateTimeFormatter SLASH_DATE_TIME_FORMAT =
+            DateTimeFormatter.ofPattern("d/M/uuuu HHmm")
+                    .withResolverStyle(ResolverStyle.STRICT);
 
     /**
      * Starts the YourHand command-line application.
@@ -178,7 +196,9 @@ public class YourHand {
                     + matcher.group(1) + " 2.");
         }
 
-        int taskNumber = parseNumber(taskNumberText, "Task numbers are whole numbers, not creative writing.");
+        int taskNumber = parseNumber(
+                taskNumberText,
+                "Task numbers are whole numbers, not creative writing.");
 
         Task task = taskList.getTask(taskNumber);
         boolean wasUpdated;
@@ -210,7 +230,9 @@ public class YourHand {
             throw new YourHandException("Don't make me guess — give me a task number, e.g. delete 2.");
         }
 
-        int taskNumber = parseNumber(taskNumberText, "Task numbers are whole numbers, not creative writing.");
+        int taskNumber = parseNumber(
+                taskNumberText,
+                "Task numbers are whole numbers, not creative writing.");
 
         Task removedTask = taskList.removeTask(taskNumber);
         saveTasks(taskList, storage);
@@ -228,14 +250,18 @@ public class YourHand {
             if (description == null || description.isBlank()) {
                 throw new YourHandException("You handed me an empty to-do. Try: todo borrow book");
             }
-            return new Todo(validateTaskText(description, "You handed me an empty to-do. Try: todo borrow book"));
+            return new Todo(
+                    validateTaskText(
+                            description,
+                            "You handed me an empty to-do. Try: todo borrow book"));
         }
 
         Matcher deadlineMatcher = DEADLINE_PATTERN.matcher(command);
         if (deadlineMatcher.matches()) {
             return new Deadline(
                     validateTaskText(deadlineMatcher.group(1), "Your deadline needs a description."),
-                    validateTaskText(deadlineMatcher.group(2), "Your deadline needs a due date or time."));
+                    parseTaskDateTime(validateTaskText(deadlineMatcher.group(2),
+                            "Your deadline needs a due date.")));
         }
         if (isCommand(command, "deadline")) {
             throw new YourHandException("Bro due when please. Try: deadline DESCRIPTION /by DATE_OR_TIME");
@@ -243,10 +269,20 @@ public class YourHand {
 
         Matcher eventMatcher = EVENT_PATTERN.matcher(command);
         if (eventMatcher.matches()) {
-            return new Event(
-                    validateTaskText(eventMatcher.group(1), "Your event needs a description."),
-                    validateTaskText(eventMatcher.group(2), "Your event needs a start time."),
-                    validateTaskText(eventMatcher.group(3), "Your event needs an end time."));
+            String description = validateTaskText(
+                    eventMatcher.group(1), "Your event needs a description.");
+            TaskDateTime from = parseTaskDateTime(
+                    validateTaskText(
+                            eventMatcher.group(2),
+                            "Your event needs a start date."));
+            TaskDateTime to = parseTaskDateTime(
+                    validateTaskText(
+                            eventMatcher.group(3),
+                            "Your event needs an end date."));
+            if (to.getValue().isBefore(from.getValue())) {
+                throw new YourHandException("Your event cannot end before it starts.");
+            }
+            return new Event(description, from, to);
         }
         if (isCommand(command, "event")) {
             throw new YourHandException("Walao when the even happening. Try: event DESCRIPTION /from START /to END");
@@ -289,6 +325,30 @@ public class YourHand {
             throw new YourHandException("Please don't use | in a task. I need it to save your data safely.");
         }
         return trimmedText;
+    }
+
+    /** Parses a supported task date or date-time and presents parse errors as chatbot errors. */
+    private static TaskDateTime parseTaskDateTime(String dateText) throws YourHandException {
+        try {
+            return new TaskDateTime(LocalDate.parse(dateText, ISO_DATE_FORMAT));
+        } catch (DateTimeParseException exception) {
+            return parseTaskDateTimeWithTime(dateText);
+        }
+    }
+
+    /** Parses one of the supported date-time formats. */
+    private static TaskDateTime parseTaskDateTimeWithTime(String dateText) throws YourHandException {
+        for (DateTimeFormatter formatter : List.of(
+                ISO_COMPACT_DATE_TIME_FORMAT,
+                ISO_COLON_DATE_TIME_FORMAT,
+                SLASH_DATE_TIME_FORMAT)) {
+            try {
+                return new TaskDateTime(LocalDateTime.parse(dateText, formatter));
+            } catch (DateTimeParseException exception) {
+                // Try the next documented format.
+            }
+        }
+        throw new YourHandException("Use yyyy-M-d, yyyy-M-d HHmm, yyyy-M-d HH:mm, or d/M/yyyy HHmm.");
     }
 
     /** Saves the current list and reports any file-writing problem to the user. */
