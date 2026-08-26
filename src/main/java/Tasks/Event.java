@@ -1,4 +1,4 @@
-package yourhand.tasks;
+package tasks;
 
 /**
  * Represents a task that starts and ends at specified dates or times.

@@ -1,9 +1,9 @@
-package yourhand.commands;
+package commands;
 
-import yourhand.exceptions.YourHandException;
-import yourhand.storage.Storage;
-import yourhand.tasks.TaskList;
-import yourhand.ui.Ui;
+import exceptions.YourHandException;
+import storage.Storage;
+import tasks.TaskList;
+import ui.Ui;
 
 /** Displays every task currently in the list. */
 public class ListCommand extends Command {

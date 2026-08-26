@@ -1,10 +1,10 @@
-package yourhand.commands;
+package commands;
 
-import yourhand.exceptions.YourHandException;
-import yourhand.storage.Storage;
-import yourhand.tasks.Task;
-import yourhand.tasks.TaskList;
-import yourhand.ui.Ui;
+import exceptions.YourHandException;
+import storage.Storage;
+import tasks.Task;
+import tasks.TaskList;
+import ui.Ui;
 
 /** Marks or unmarks one task by its one-based task number. */
 public class TaskStatusCommand extends Command {

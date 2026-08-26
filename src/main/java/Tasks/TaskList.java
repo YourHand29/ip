@@ -1,6 +1,6 @@
-package yourhand.tasks;
+package tasks;
 
-import yourhand.exceptions.YourHandException;
+import exceptions.YourHandException;
 
 import java.util.ArrayList;
 import java.util.List;

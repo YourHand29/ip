@@ -21,15 +21,15 @@ YourHand is a command-line task manager for tracking to-dos, deadlines, and even
 
 1. Open this project directory in IntelliJ IDEA.
 2. Set the project SDK and language level to JDK 25.
-3. Open `src/main/java/yourhand/YourHand.java` and run `yourhand.YourHand.main()`.
+3. Open `src/main/java/YourHand.java` and run `YourHand.main()`.
 
 ### Terminal
 
 From the project root, compile and run the application:
 
 ```powershell
-javac -d _temp/classes src/main/java/yourhand/YourHand.java src/main/java/yourhand/tasks/*.java src/main/java/yourhand/exceptions/*.java src/main/java/yourhand/storage/*.java src/main/java/yourhand/ui/*.java src/main/java/yourhand/commands/*.java
-java -cp _temp/classes yourhand.YourHand
+javac -d _temp/classes src/main/java/YourHand.java src/main/java/tasks/*.java src/main/java/exceptions/*.java
+java -cp _temp/classes YourHand
 ```
 
 ## Test the console interface
