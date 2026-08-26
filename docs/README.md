@@ -72,24 +72,6 @@ delete 3
 
 After deletion, remaining tasks are renumbered by `list`.
 
-### Inspect corrupted saved entries
-
-Use `corrupt` to see saved entries that YourHand could not load and the reason each entry is invalid.
-
-```text
-corrupt
-```
-
-### Repair a corrupted saved entry
-
-Use `editcorrupt ENTRY_NUMBER CORRECTED_FILE_LINE` to replace one displayed corrupt entry. The corrected line must use the data-file format.
-
-```text
-editcorrupt 1 D | 0 | return book | 2026-10-19
-```
-
-The repaired task is added back to your task list and saved immediately.
-
 ### Exit
 
 Use `bye` to close YourHand.
@@ -102,7 +84,7 @@ bye
 
 YourHand keeps running after an invalid command. It reports a message explaining what is missing or invalid, and the existing task list is unchanged. For example, `todo` needs a description, and `mark one` needs a whole-number task number.
 
-The `|` character is reserved for the saved-data format and cannot be used in task text. Dates and times must be real values in one of the documented formats. If the saved file contains malformed task entries, YourHand skips those entries and reports how many were ignored while still loading valid tasks.
+The `|` character is reserved for the saved-data format and cannot be used in task text. Dates and times must be real values in one of the documented formats. If the saved file contains any malformed task entry, YourHand does not load that file and starts with an empty list instead.
 
 When adding a task with the same description as an existing task, YourHand shows a reminder but still adds it.
 

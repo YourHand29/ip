@@ -36,7 +36,7 @@ ____________________________________________________________
  You handed me an empty to-do. Try: todo borrow book
 ____________________________________________________________
 ____________________________________________________________
- Hmm, I don't speak that yet. Try todo, deadline, event, list, mark, unmark, delete, corrupt, editcorrupt, or bye.
+ Hmm, I don't speak that yet. Try todo, deadline, event, list, mark, unmark, delete, or bye.
 ____________________________________________________________
 ____________________________________________________________
  See you never :)
@@ -545,11 +545,11 @@ ____________________________________________________________
 ____________________________________________________________
 ```
 
-## Test case: Skip malformed saved tasks and retain valid ones
+## Test case: Reject an entire corrupted data file
 
 ### Aim
 
-Confirm that corrupt saved-data lines do not crash the chatbot and do not prevent valid tasks from loading.
+Confirm that one malformed saved-data line prevents every task in that file from loading.
 
 ### Setup
 
@@ -576,10 +576,9 @@ ____________________________________________________________
  Selamat Datang 早上好! YourHand 为你服务
  你来这干嘛 What are you here for?
 ____________________________________________________________
- I skipped 4 broken saved tasks.
+ Your saved data file looks corrupted, so I didn't load it.
 ____________________________________________________________
- Here's your list of responsibilities:
- 1.[T][X] kept task
+ Your task list is empty.
 ____________________________________________________________
 ____________________________________________________________
  See you never :)
@@ -617,59 +616,6 @@ ____________________________________________________________
 ____________________________________________________________
 ____________________________________________________________
  Your task list is empty.
-____________________________________________________________
-____________________________________________________________
- See you never :)
-____________________________________________________________
-```
-
-## Test case: Inspect and repair a corrupted saved task
-
-### Aim
-
-Confirm that the user can view a corrupt saved entry, see its specific problem, repair it, and restore it to the active task list.
-
-### Setup
-
-```powershell
-powershell -NoProfile -Command "New-Item -ItemType Directory -Force data | Out-Null; Set-Content -Path data/yourhand.txt -Value 'D | 2 | return book | 2026-10-19'"
-```
-
-### Input
-
-```text
-corrupt
-editcorrupt 1 D | 0 | return book | 2026-10-19
-list
-bye
-```
-
-### Expected output
-
-```text
-__   __                 _   _                 _
-\ \ / /__  _   _ _ __  | | | | __ _ _ __   __| |
- \ V / _ \| | | | '__| | |_| |/ _` | '_ \ / _` |
-  | | (_) | |_| | |    |  _  | (_| | | | | (_| |
-  |_|\___/ \__,_|_|    |_| |_|\__,_|_| |_|\__,_|
-____________________________________________________________
- Selamat Datang 早上好! YourHand 为你服务
- 你来这干嘛 What are you here for?
-____________________________________________________________
- I skipped 1 broken saved task.
-____________________________________________________________
- Here's what looks broken in data/yourhand.txt:
- 1. D | 2 | return book | 2026-10-19
-    Why: Saved task status must be 0 or 1.
- Use: editcorrupt ENTRY_NUMBER CORRECTED_FILE_LINE
-____________________________________________________________
-____________________________________________________________
- Fixed and restored this task:
-   [D][ ] return book (by: Oct 19 2026)
-____________________________________________________________
-____________________________________________________________
- Here's your list of responsibilities:
- 1.[D][ ] return book (by: Oct 19 2026)
 ____________________________________________________________
 ____________________________________________________________
  See you never :)

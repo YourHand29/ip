@@ -1,3 +1,4 @@
+import exceptions.CorruptFileException;
 import exceptions.YourHandException;
 import tasks.Deadline;
 import tasks.Event;
@@ -29,8 +30,6 @@ public class YourHand {
             "^event\\s+(.+?)\\s+/from\\s+(.+?)\\s+/to\\s+(.+)$");
     private static final Pattern STATUS_PATTERN = Pattern.compile("^(mark|unmark)(?:\\s+(.+))?$");
     private static final Pattern DELETE_PATTERN = Pattern.compile("^delete(?:\\s+(.+))?$");
-    private static final Pattern EDIT_CORRUPT_PATTERN = Pattern.compile(
-            "^editcorrupt(?:\\s+(.+?))?(?:\\s+(.+))?$");
     private static final DateTimeFormatter ISO_DATE_FORMAT = DateTimeFormatter.ofPattern("uuuu-M-d")
             .withResolverStyle(ResolverStyle.STRICT);
     private static final DateTimeFormatter ISO_COMPACT_DATE_TIME_FORMAT =
@@ -53,9 +52,7 @@ public class YourHand {
 
         Scanner scanner = new Scanner(System.in);
         Storage storage = new Storage();
-        Storage.LoadResult loadResult = loadTasks(storage);
-        TaskList taskList = loadResult.taskList();
-        printSkippedTaskWarning(loadResult.skippedTaskCount());
+        TaskList taskList = loadTasks(storage);
         while (scanner.hasNextLine()) {
             String command = scanner.nextLine().trim();
             System.out.println(SEPARATOR);
@@ -102,17 +99,6 @@ public class YourHand {
             printTaskList(taskList);
             return false;
         }
-        if (command.equals("corrupt")) {
-            printCorruptedTasks(storage);
-            return false;
-        }
-
-        Matcher editCorruptMatcher = EDIT_CORRUPT_PATTERN.matcher(command);
-        if (editCorruptMatcher.matches()) {
-            editCorruptedTask(editCorruptMatcher, taskList, storage);
-            return false;
-        }
-
         Matcher statusMatcher = STATUS_PATTERN.matcher(command);
         if (statusMatcher.matches()) {
             updateTaskStatus(statusMatcher, taskList, storage);
@@ -147,45 +133,6 @@ public class YourHand {
         for (int taskNumber = 1; taskNumber <= taskList.size(); taskNumber++) {
             System.out.println(" " + taskNumber + "." + taskList.getTask(taskNumber));
         }
-    }
-
-    /** Lists corrupt saved entries and their repair instructions. */
-    private static void printCorruptedTasks(Storage storage) {
-        if (storage.getCorruptedTasks().isEmpty()) {
-            System.out.println(" Nothing in the saved file needs fixing right now.");
-            return;
-        }
-
-        System.out.println(" Here's what looks broken in data/yourhand.txt:");
-        for (int index = 0; index < storage.getCorruptedTasks().size(); index++) {
-            Storage.CorruptedTask corruptedTask = storage.getCorruptedTasks().get(index);
-            System.out.println(" " + (index + 1) + ". " + corruptedTask.taskLine());
-            System.out.println("    Why: " + corruptedTask.reason());
-        }
-        System.out.println(" Use: editcorrupt ENTRY_NUMBER CORRECTED_FILE_LINE");
-    }
-
-    /** Repairs a corrupt saved entry and adds the reconstructed task to the task list. */
-    private static void editCorruptedTask(Matcher matcher, TaskList taskList, Storage storage)
-            throws YourHandException {
-        String entryNumberText = matcher.group(1);
-        String correctedLine = matcher.group(2);
-        if (entryNumberText == null || correctedLine == null || correctedLine.isBlank()) {
-            throw new YourHandException("Try: editcorrupt 1 T | 0 | read book");
-        }
-
-        int entryNumber = parseNumber(entryNumberText, "Corrupt entry numbers are whole numbers.");
-        Task repairedTask;
-        try {
-            repairedTask = storage.repairCorruptedTask(entryNumber, correctedLine);
-        } catch (IllegalArgumentException exception) {
-            throw new YourHandException("That repair still looks wrong: " + exception.getMessage());
-        }
-        printDuplicateTaskWarning(repairedTask, taskList);
-        taskList.add(repairedTask);
-        saveTasks(taskList, storage);
-        System.out.println(" Fixed and restored this task:");
-        System.out.println("   " + repairedTask);
     }
 
     /** Updates a task's completion status from a validated mark or unmark command. */
@@ -289,7 +236,7 @@ public class YourHand {
         }
 
         throw new YourHandException("Hmm, I don't speak that yet. Try todo, deadline, event, list, mark, "
-                + "unmark, delete, corrupt, editcorrupt, or bye.");
+                + "unmark, delete, or bye.");
     }
 
     /** Returns whether a command begins with a command word. */
@@ -361,21 +308,15 @@ public class YourHand {
     }
 
     /** Loads saved tasks and starts with an empty list if the data file cannot be read. */
-    private static Storage.LoadResult loadTasks(Storage storage) {
+    private static TaskList loadTasks(Storage storage) {
         try {
             return storage.load();
+        } catch (CorruptFileException exception) {
+            System.out.println(" Your saved data file looks corrupted, so I didn't load it.");
+            return new TaskList();
         } catch (IOException | SecurityException exception) {
             System.out.println(" I couldn't load your saved tasks. Starting with a clean slate.");
-            return new Storage.LoadResult(new TaskList(), List.of());
+            return new TaskList();
         }
-    }
-
-    /** Informs the user when malformed saved entries were ignored during startup. */
-    private static void printSkippedTaskWarning(int skippedTaskCount) {
-        if (skippedTaskCount == 0) {
-            return;
-        }
-        String taskWord = skippedTaskCount == 1 ? "task" : "tasks";
-        System.out.println(" I skipped " + skippedTaskCount + " broken saved " + taskWord + ".");
     }
 }
