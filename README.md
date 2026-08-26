@@ -32,6 +32,25 @@ javac -d _temp/classes src/main/java/YourHand.java src/main/java/tasks/*.java sr
 java -cp _temp/classes YourHand
 ```
 
+## Build and run the fat JAR
+
+The Shadow plugin packages the application and its runtime dependencies into one runnable JAR.
+
+1. From the project root, create the JAR:
+
+   ```powershell
+   .\gradlew.bat shadowJar
+   ```
+
+2. Find the generated file at `build\libs\yourhand.jar`.
+3. Run it with JDK 25:
+
+   ```powershell
+   java -jar build\libs\yourhand.jar
+   ```
+
+The JAR reads commands from the same terminal in which it is started. Run `bye` to exit normally.
+
 ## Test the console interface
 
 The repeatable console test plan is in `test/ui-test-plan.md`. Run it from the project root:
