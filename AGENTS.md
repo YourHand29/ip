@@ -35,6 +35,12 @@ After every code update:
 1. Update `test/ui-test-plan.md` when the change adds, modifies, or removes user-visible behaviour or relevant test coverage.
 2. Invoke the project-specific `test-ui` skill and act on its result before reporting the change as complete.
 
+## JUnit testing
+
+Maintain JUnit coverage for approximately the top 50% highest-value methods in the codebase. Prioritize methods that contain complex logic, implement core business behaviour, or protect critical data and invariants; do not treat this as a raw line-coverage target.
+
+After every code change, review the affected methods and update or add JUnit tests as needed to keep this target satisfied. Run the relevant Gradle JUnit tests and resolve any failures before reporting the change as complete.
+
 ## Git
 
 Use lightweight tags unless the user requests an annotated tag.

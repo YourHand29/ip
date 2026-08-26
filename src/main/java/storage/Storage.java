@@ -22,7 +22,22 @@ import java.util.List;
  * Saves and loads YourHand task data from a file.
  */
 public class Storage {
-    private static final Path FILE_PATH = Path.of("data", "yourhand.txt");
+    private static final Path DEFAULT_FILE_PATH = Path.of("data", "yourhand.txt");
+    private final Path filePath;
+
+    /** Creates storage that uses YourHand's default data-file location. */
+    public Storage() {
+        this(DEFAULT_FILE_PATH);
+    }
+
+    /**
+     * Creates storage that uses the given data-file location.
+     *
+     * @param filePath Location of the task data file.
+     */
+    public Storage(Path filePath) {
+        this.filePath = filePath;
+    }
 
     /**
      * Saves every task in the list, replacing the previous saved data.
@@ -31,11 +46,11 @@ public class Storage {
      * @throws IOException If the data directory or file cannot be written.
      */
     public void save(TaskList taskList) throws IOException {
-        Files.createDirectories(FILE_PATH.getParent());
+        Files.createDirectories(filePath.getParent());
         List<String> taskLines = new ArrayList<>(taskList.getTasks().stream()
                 .map(Task::toFileString)
                 .toList());
-        Files.write(FILE_PATH, taskLines, StandardCharsets.UTF_8);
+        Files.write(filePath, taskLines, StandardCharsets.UTF_8);
     }
 
     /**
@@ -47,11 +62,11 @@ public class Storage {
      */
     public TaskList load() throws IOException, CorruptFileException {
         TaskList taskList = new TaskList();
-        if (!Files.exists(FILE_PATH)) {
+        if (!Files.exists(filePath)) {
             return taskList;
         }
 
-        for (String taskLine : Files.readAllLines(FILE_PATH, StandardCharsets.UTF_8)) {
+        for (String taskLine : Files.readAllLines(filePath, StandardCharsets.UTF_8)) {
             if (taskLine.isBlank()) {
                 continue;
             }
