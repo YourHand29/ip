@@ -15,6 +15,7 @@ public class AddTaskCommand extends Command {
         this.task = task;
     }
 
+    /** {@inheritDoc} */
     @Override
     public void execute(TaskList taskList, Ui ui, Storage storage) throws YourHandException {
         int existingTaskNumber = taskList.findTaskNumberByDescription(task.getDescription());
