@@ -2,6 +2,7 @@ import commands.AddTaskCommand;
 import commands.Command;
 import commands.DeleteCommand;
 import commands.ExitCommand;
+import commands.FindCommand;
 import commands.ListCommand;
 import commands.TaskStatusCommand;
 import exceptions.CorruptFileException;
@@ -35,6 +36,7 @@ public class YourHand {
             "^event\\s+(.+?)\\s+/from\\s+(.+?)\\s+/to\\s+(.+)$");
     private static final Pattern STATUS_PATTERN = Pattern.compile("^(mark|unmark)(?:\\s+(.+))?$");
     private static final Pattern DELETE_PATTERN = Pattern.compile("^delete(?:\\s+(.+))?$");
+    private static final Pattern FIND_PATTERN = Pattern.compile("^find(?:\\s+(.*))?$");
     private static final DateTimeFormatter ISO_DATE_FORMAT = DateTimeFormatter.ofPattern("uuuu-M-d")
             .withResolverStyle(ResolverStyle.STRICT);
     private static final DateTimeFormatter ISO_COMPACT_DATE_TIME_FORMAT =
@@ -87,6 +89,14 @@ public class YourHand {
         }
         if (command.equals("list")) {
             return new ListCommand();
+        }
+        Matcher findMatcher = FIND_PATTERN.matcher(command);
+        if (findMatcher.matches()) {
+            String keyword = findMatcher.group(1);
+            if (keyword == null || keyword.isBlank()) {
+                throw new YourHandException("Tell me what to find, e.g. find book.");
+            }
+            return new FindCommand(keyword.trim());
         }
         Matcher statusMatcher = STATUS_PATTERN.matcher(command);
         if (statusMatcher.matches()) {
