@@ -37,7 +37,7 @@ test {
 }
 
 application {
-    mainClass = 'YourHand'
+    mainClass = 'yourhand.YourHand'
 }
 
 jar {

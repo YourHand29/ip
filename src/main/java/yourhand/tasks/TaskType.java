@@ -1,4 +1,4 @@
-package tasks;
+package yourhand.tasks;
 
 /**
  * Represents the supported categories of tasks and their display icons.

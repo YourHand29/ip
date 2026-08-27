@@ -1,4 +1,4 @@
-package tasks;
+package yourhand.tasks;
 
 /**
  * Represents a task and whether it has been completed.

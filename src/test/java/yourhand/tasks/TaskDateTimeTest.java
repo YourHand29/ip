@@ -1,4 +1,4 @@
-package tasks;
+package yourhand.tasks;
 
 import org.junit.jupiter.api.Test;
 

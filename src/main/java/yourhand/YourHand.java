@@ -1,19 +1,21 @@
-import commands.AddTaskCommand;
-import commands.Command;
-import commands.DeleteCommand;
-import commands.ExitCommand;
-import commands.ListCommand;
-import commands.TaskStatusCommand;
-import exceptions.CorruptFileException;
-import exceptions.YourHandException;
-import storage.Storage;
-import tasks.Deadline;
-import tasks.Event;
-import tasks.Task;
-import tasks.TaskDateTime;
-import tasks.TaskList;
-import tasks.Todo;
-import ui.Ui;
+package yourhand;
+
+import yourhand.commands.AddTaskCommand;
+import yourhand.commands.Command;
+import yourhand.commands.DeleteCommand;
+import yourhand.commands.ExitCommand;
+import yourhand.commands.ListCommand;
+import yourhand.commands.TaskStatusCommand;
+import yourhand.exceptions.CorruptFileException;
+import yourhand.exceptions.YourHandException;
+import yourhand.storage.Storage;
+import yourhand.tasks.Deadline;
+import yourhand.tasks.Event;
+import yourhand.tasks.Task;
+import yourhand.tasks.TaskDateTime;
+import yourhand.tasks.TaskList;
+import yourhand.tasks.Todo;
+import yourhand.ui.Ui;
 
 import java.io.IOException;
 import java.time.LocalDate;

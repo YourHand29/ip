@@ -1,6 +1,6 @@
-package tasks;
+package yourhand.tasks;
 
-import exceptions.YourHandException;
+import yourhand.exceptions.YourHandException;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
