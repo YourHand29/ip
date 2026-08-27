@@ -1,9 +1,9 @@
-package commands;
+package yourhand.commands;
 
-import exceptions.YourHandException;
-import storage.Storage;
-import tasks.TaskList;
-import ui.Ui;
+import yourhand.exceptions.YourHandException;
+import yourhand.storage.Storage;
+import yourhand.tasks.TaskList;
+import yourhand.ui.Ui;
 
 /** Ends the application after displaying its farewell message. */
 public class ExitCommand extends Command {

@@ -1,4 +1,4 @@
-package tasks;
+package yourhand.tasks;
 
 /**
  * Represents a task without an associated date or time.

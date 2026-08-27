@@ -1,10 +1,10 @@
-package commands;
+package yourhand.commands;
 
-import exceptions.YourHandException;
-import storage.Storage;
-import tasks.Task;
-import tasks.TaskList;
-import ui.Ui;
+import yourhand.exceptions.YourHandException;
+import yourhand.storage.Storage;
+import yourhand.tasks.Task;
+import yourhand.tasks.TaskList;
+import yourhand.ui.Ui;
 
 /** Adds one parsed task to the task list. */
 public class AddTaskCommand extends Command {
