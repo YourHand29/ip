@@ -151,4 +151,40 @@ class TaskListTest {
 
         assertEquals(-1, taskList.findTaskNumberByDescription("buy bread"));
     }
+
+    @Test
+    void findTaskNumbersByDescriptionKeyword_matchingSubstring_returnsAllTaskNumbers() {
+        TaskList taskList = new TaskList();
+        taskList.add(new Todo("read book"));
+        taskList.add(new Todo("buy bread"));
+        taskList.add(new Todo("return book"));
+
+        assertEquals(List.of(1, 3), taskList.findTaskNumbersByDescriptionKeyword("book"));
+    }
+
+    @Test
+    void findTaskNumbersByDescriptionKeyword_differentLetterCase_matchesIgnoringCase() {
+        TaskList taskList = new TaskList();
+        taskList.add(new Todo("Read BOOK"));
+
+        assertEquals(List.of(1), taskList.findTaskNumbersByDescriptionKeyword("book"));
+    }
+
+    @Test
+    void findTaskNumbersByDescriptionKeyword_regexCharacters_areTreatedAsLiteralText() {
+        TaskList taskList = new TaskList();
+        taskList.add(new Todo("review C++ notes [week 1]"));
+        taskList.add(new Todo("review Java notes"));
+
+        assertEquals(List.of(1), taskList.findTaskNumbersByDescriptionKeyword("C++"));
+        assertEquals(List.of(1), taskList.findTaskNumbersByDescriptionKeyword("[week 1]"));
+    }
+
+    @Test
+    void findTaskNumbersByDescriptionKeyword_noMatches_returnsEmptyList() {
+        TaskList taskList = new TaskList();
+        taskList.add(new Todo("read book"));
+
+        assertEquals(List.of(), taskList.findTaskNumbersByDescriptionKeyword("milk"));
+    }
 }

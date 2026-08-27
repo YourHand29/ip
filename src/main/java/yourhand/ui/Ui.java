@@ -1,5 +1,6 @@
 package yourhand.ui;
 
+import yourhand.exceptions.YourHandException;
 import yourhand.tasks.Task;
 import yourhand.tasks.TaskList;
 
@@ -63,6 +64,19 @@ public class Ui {
         for (Task task : taskList.getTasks()) {
             System.out.println(" " + taskNumber + "." + task);
             taskNumber++;
+        }
+    }
+
+    /** Displays tasks whose descriptions contain the given keyword. */
+    public void showSearchResults(TaskList taskList, String keyword) throws YourHandException {
+        var matchingTaskNumbers = taskList.findTaskNumbersByDescriptionKeyword(keyword);
+        if (matchingTaskNumbers.isEmpty()) {
+            System.out.println(" No tasks found containing \"" + keyword + "\".");
+            return;
+        }
+        System.out.println(" Here are the matching tasks in your list:");
+        for (int taskNumber : matchingTaskNumbers) {
+            System.out.println(" " + taskNumber + "." + taskList.getTask(taskNumber));
         }
     }
 

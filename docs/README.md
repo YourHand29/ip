@@ -46,6 +46,14 @@ Use `list` to display every task. Type icons identify the task kind: `[T]` for a
 list
 ```
 
+### Find tasks
+
+Use `find KEYWORD` to display tasks whose descriptions contain the keyword. Matching is case-insensitive, and the keyword is treated as ordinary text.
+
+```text
+find book
+```
+
 ### Mark a task done
 
 Use `mark TASK_NUMBER` to complete a task.
