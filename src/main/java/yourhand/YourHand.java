@@ -4,6 +4,7 @@ import yourhand.commands.AddTaskCommand;
 import yourhand.commands.Command;
 import yourhand.commands.DeleteCommand;
 import yourhand.commands.ExitCommand;
+import yourhand.commands.FindCommand;
 import yourhand.commands.ListCommand;
 import yourhand.commands.TaskStatusCommand;
 import yourhand.exceptions.CorruptFileException;
@@ -16,7 +17,6 @@ import yourhand.tasks.TaskDateTime;
 import yourhand.tasks.TaskList;
 import yourhand.tasks.Todo;
 import yourhand.ui.Ui;
-import yourhand.commands.FindCommand;
 
 import java.io.IOException;
 import java.time.LocalDate;
