@@ -85,7 +85,7 @@ public class YourHand {
      * @return The executable command represented by the input.
      * @throws YourHandException if the command is invalid
      */
-    private static Command parseCommand(String command) throws YourHandException {
+    static Command parseCommand(String command) throws YourHandException {
         if (command.equals("bye")) {
             return new ExitCommand();
         }
@@ -244,7 +244,7 @@ public class YourHand {
     }
 
     /** Loads saved tasks and starts with an empty list if the data file cannot be read. */
-    private static TaskList loadTasks(Storage storage, Ui ui) {
+    static TaskList loadTasks(Storage storage, Ui ui) {
         try {
             return storage.load();
         } catch (CorruptFileException exception) {
