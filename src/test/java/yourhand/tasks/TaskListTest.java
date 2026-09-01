@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class TaskListTest {
 
     @Test
-    void newTaskList_isEmptyAndHasSizeZero() {
+    public void newTaskList_isEmptyAndHasSizeZero() {
         TaskList taskList = new TaskList();
 
         assertTrue(taskList.isEmpty());
@@ -23,7 +23,7 @@ class TaskListTest {
     }
 
     @Test
-    void addTask_addsTaskAndUpdatesSizeAndEmptyState() {
+    public void addTask_addsTaskAndUpdatesSizeAndEmptyState() {
         TaskList taskList = new TaskList();
         Todo task = new Todo("read book");
 
@@ -35,7 +35,7 @@ class TaskListTest {
     }
 
     @Test
-    void getTask_validOneBasedNumber_returnsRequestedTask() throws YourHandException {
+    public void getTask_validOneBasedNumber_returnsRequestedTask() throws YourHandException {
         TaskList taskList = new TaskList();
         Todo firstTask = new Todo("read book");
         Todo secondTask = new Todo("return book");
@@ -47,14 +47,14 @@ class TaskListTest {
     }
 
     @Test
-    void getTask_emptyList_throwsYourHandException() {
+    public void getTask_emptyList_throwsYourHandException() {
         TaskList taskList = new TaskList();
 
         assertThrows(YourHandException.class, () -> taskList.getTask(1));
     }
 
     @Test
-    void getTask_numberOutsideList_throwsYourHandException() {
+    public void getTask_numberOutsideList_throwsYourHandException() {
         TaskList taskList = new TaskList();
         taskList.add(new Todo("read book"));
 
@@ -63,7 +63,7 @@ class TaskListTest {
     }
 
     @Test
-    void removeTask_validOneBasedNumber_returnsTaskAndClosesGap() throws YourHandException {
+    public void removeTask_validOneBasedNumber_returnsTaskAndClosesGap() throws YourHandException {
         TaskList taskList = new TaskList();
         Todo firstTask = new Todo("read book");
         Todo secondTask = new Todo("return book");
@@ -81,14 +81,14 @@ class TaskListTest {
     }
 
     @Test
-    void removeTask_emptyList_throwsYourHandException() {
+    public void removeTask_emptyList_throwsYourHandException() {
         TaskList taskList = new TaskList();
 
         assertThrows(YourHandException.class, () -> taskList.removeTask(1));
     }
 
     @Test
-    void removeTask_numberOutsideList_throwsYourHandException() {
+    public void removeTask_numberOutsideList_throwsYourHandException() {
         TaskList taskList = new TaskList();
         taskList.add(new Todo("read book"));
 
@@ -97,7 +97,7 @@ class TaskListTest {
     }
 
     @Test
-    void getTasks_returnsUnmodifiableSnapshotInDisplayOrder() {
+    public void getTasks_returnsUnmodifiableSnapshotInDisplayOrder() {
         TaskList taskList = new TaskList();
         Todo firstTask = new Todo("read book");
         Todo secondTask = new Todo("return book");
@@ -111,14 +111,14 @@ class TaskListTest {
     }
 
     @Test
-    void findTaskNumberByDescription_emptyList_taskNotFound() {
+    public void findTaskNumberByDescription_emptyList_taskNotFound() {
         TaskList taskList = new TaskList();
 
         assertEquals(-1, taskList.findTaskNumberByDescription("read book"));
     }
 
     @Test
-    void findTaskNumberByDescription_matchingDescription_returnsOneBasedTaskNumber() {
+    public void findTaskNumberByDescription_matchingDescription_returnsOneBasedTaskNumber() {
         TaskList taskList = new TaskList();
         taskList.add(new Todo("read book"));
         taskList.add(new Todo("return book"));
@@ -127,7 +127,7 @@ class TaskListTest {
     }
 
     @Test
-    void findTaskNumberByDescription_differentLetterCase_returnsMatchingTaskNumber() {
+    public void findTaskNumberByDescription_differentLetterCase_returnsMatchingTaskNumber() {
         TaskList taskList = new TaskList();
         taskList.add(new Todo("Read Book"));
 
@@ -135,7 +135,7 @@ class TaskListTest {
     }
 
     @Test
-    void findTaskNumberByDescription_duplicateDescriptions_returnsFirstMatchingTaskNumber() {
+    public void findTaskNumberByDescription_duplicateDescriptions_returnsFirstMatchingTaskNumber() {
         TaskList taskList = new TaskList();
         taskList.add(new Todo("read book"));
         taskList.add(new Todo("return book"));
@@ -145,7 +145,7 @@ class TaskListTest {
     }
 
     @Test
-    void findTaskNumberByDescription_nonMatchingDescription_taskNotFound() {
+    public void findTaskNumberByDescription_nonMatchingDescription_taskNotFound() {
         TaskList taskList = new TaskList();
         taskList.add(new Todo("read book"));
 
@@ -153,7 +153,7 @@ class TaskListTest {
     }
 
     @Test
-    void findTaskNumbersByDescriptionKeyword_matchingSubstring_returnsAllTaskNumbers() {
+    public void findTaskNumbersByDescriptionKeyword_matchingSubstring_returnsAllTaskNumbers() {
         TaskList taskList = new TaskList();
         taskList.add(new Todo("read book"));
         taskList.add(new Todo("buy bread"));
@@ -163,7 +163,7 @@ class TaskListTest {
     }
 
     @Test
-    void findTaskNumbersByDescriptionKeyword_differentLetterCase_matchesIgnoringCase() {
+    public void findTaskNumbersByDescriptionKeyword_differentLetterCase_matchesIgnoringCase() {
         TaskList taskList = new TaskList();
         taskList.add(new Todo("Read BOOK"));
 
@@ -171,7 +171,7 @@ class TaskListTest {
     }
 
     @Test
-    void findTaskNumbersByDescriptionKeyword_regexCharacters_areTreatedAsLiteralText() {
+    public void findTaskNumbersByDescriptionKeyword_regexCharacters_areTreatedAsLiteralText() {
         TaskList taskList = new TaskList();
         taskList.add(new Todo("review C++ notes [week 1]"));
         taskList.add(new Todo("review Java notes"));
@@ -181,7 +181,7 @@ class TaskListTest {
     }
 
     @Test
-    void findTaskNumbersByDescriptionKeyword_noMatches_returnsEmptyList() {
+    public void findTaskNumbersByDescriptionKeyword_noMatches_returnsEmptyList() {
         TaskList taskList = new TaskList();
         taskList.add(new Todo("read book"));
 

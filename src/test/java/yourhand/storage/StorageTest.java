@@ -28,7 +28,7 @@ class StorageTest {
     Path temporaryDirectory;
 
     @Test
-    void load_missingDataFile_returnsEmptyTaskList() throws IOException, CorruptFileException {
+    public void load_missingDataFile_returnsEmptyTaskList() throws IOException, CorruptFileException {
         Storage storage = new Storage(temporaryDirectory.resolve("yourhand.txt"));
 
         TaskList loadedTasks = storage.load();
@@ -62,7 +62,7 @@ class StorageTest {
     }
 
     @Test
-    void load_malformedSavedEntry_throwsCorruptFileException() throws IOException {
+    public void load_malformedSavedEntry_throwsCorruptFileException() throws IOException {
         Path dataFile = temporaryDirectory.resolve("yourhand.txt");
         Files.writeString(dataFile, "D | 0 | submit report | 2026-02-30", StandardCharsets.UTF_8);
         Storage storage = new Storage(dataFile);
@@ -71,7 +71,7 @@ class StorageTest {
     }
 
     @Test
-    void load_eventEndingBeforeStart_throwsCorruptFileException() throws IOException {
+    public void load_eventEndingBeforeStart_throwsCorruptFileException() throws IOException {
         Path dataFile = temporaryDirectory.resolve("yourhand.txt");
         Files.writeString(dataFile, "E | 0 | meeting | 2026-08-27 | 2026-08-26", StandardCharsets.UTF_8);
         Storage storage = new Storage(dataFile);

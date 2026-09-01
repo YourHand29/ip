@@ -11,7 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class TaskDateTimeTest {
 
     @Test
-    void dateOnlyValue_formatsForStorageAndDisplayWithoutTime() {
+    public void dateOnlyValue_formatsForStorageAndDisplayWithoutTime() {
         TaskDateTime taskDateTime = new TaskDateTime(LocalDate.of(2026, 8, 26));
 
         assertEquals(LocalDateTime.of(2026, 8, 26, 0, 0), taskDateTime.getValue());
@@ -20,7 +20,7 @@ class TaskDateTimeTest {
     }
 
     @Test
-    void dateTimeValue_formatsForStorageAndDisplayWithTime() {
+    public void dateTimeValue_formatsForStorageAndDisplayWithTime() {
         TaskDateTime taskDateTime = new TaskDateTime(LocalDateTime.of(2026, 8, 26, 18, 5));
 
         assertEquals(LocalDateTime.of(2026, 8, 26, 18, 5), taskDateTime.getValue());

@@ -20,6 +20,12 @@ public class YourHandEngine {
         taskList = YourHand.loadTasks(storage, new Ui());
     }
 
+    /** Creates an engine with collaborators supplied by the caller. */
+    public YourHandEngine(Storage storage, TaskList taskList) {
+        this.storage = storage;
+        this.taskList = taskList;
+    }
+
     /** Executes one command and returns the text that should be shown to the user. */
     public String execute(String command) {
         ByteArrayOutputStream response = new ByteArrayOutputStream();

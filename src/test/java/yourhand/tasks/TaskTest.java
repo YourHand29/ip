@@ -10,7 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class TaskTest {
 
     @Test
-    void newTodo_isIncompleteAndUsesTodoRepresentations() {
+    public void newTodo_isIncompleteAndUsesTodoRepresentations() {
         Task task = new Todo("read book");
 
         assertEquals(" ", task.getStatusIcon());
@@ -19,7 +19,7 @@ class TaskTest {
     }
 
     @Test
-    void markAsDone_incompleteTask_marksTaskAndReportsChange() {
+    public void markAsDone_incompleteTask_marksTaskAndReportsChange() {
         Task task = new Todo("read book");
 
         assertTrue(task.markAsDone());
@@ -29,7 +29,7 @@ class TaskTest {
     }
 
     @Test
-    void markAsUndone_doneTask_marksTaskUndoneAndReportsChange() {
+    public void markAsUndone_doneTask_marksTaskUndoneAndReportsChange() {
         Task task = new Todo("read book");
         task.markAsDone();
 
