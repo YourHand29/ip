@@ -20,30 +20,42 @@ import javafx.stage.Stage;
 
 /** Provides the graphical interface for YourHand. */
 public class MainWindow extends Application {
+    private static final int MESSAGE_SPACING = 10;
+    private static final int CONTENT_PADDING = 15;
+    private static final int INPUT_PADDING = 10;
+    private static final int MESSAGE_HORIZONTAL_PADDING = 12;
+    private static final int MESSAGE_VERTICAL_PADDING = 9;
+    private static final int MESSAGE_MAX_WIDTH = 430;
+    private static final int AVATAR_SIZE = 32;
+    private static final int AVATAR_RADIUS = AVATAR_SIZE / 2;
+    private static final int AVATAR_FONT_SIZE = 11;
+    private static final String USER_COLOR = "#2563eb";
+    private static final String CHATBOT_COLOR = "#7c3aed";
+
     private final YourHandEngine engine = new YourHandEngine();
-    private final VBox messages = new VBox(10);
+    private final VBox messages = new VBox(MESSAGE_SPACING);
     private final TextField input = new TextField();
 
     @Override
     public void start(Stage stage) {
-        messages.setPadding(new Insets(15));
+        messages.setPadding(new Insets(CONTENT_PADDING));
         messages.setStyle("-fx-background-color: #f5f7fa;");
         ScrollPane conversation = new ScrollPane(messages);
         conversation.setFitToWidth(true);
         conversation.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
         input.setPromptText("Enter a command, e.g. find book");
-        input.setStyle("-fx-font-size: 14px; -fx-padding: 9px;");
+        input.setStyle("-fx-font-size: 14px; -fx-padding: " + MESSAGE_VERTICAL_PADDING + "px;");
         Button send = new Button("Send");
         send.setDefaultButton(true);
-        send.setStyle("-fx-background-color: #2563eb; -fx-text-fill: white;"
+        send.setStyle("-fx-background-color: " + USER_COLOR + "; -fx-text-fill: white;"
                 + " -fx-font-weight: bold; -fx-padding: 9px 18px; -fx-background-radius: 5px;");
         send.setOnAction(event -> submitCommand());
         input.setOnAction(event -> submitCommand());
 
         BorderPane root = new BorderPane(conversation);
         HBox inputArea = new HBox(10, input, send);
-        inputArea.setPadding(new Insets(10));
+        inputArea.setPadding(new Insets(INPUT_PADDING));
         inputArea.setStyle("-fx-background-color: white; -fx-border-color: #d1d5db; -fx-border-width: 1 0 0 0;");
         HBox.setHgrow(input, Priority.ALWAYS);
         root.setBottom(inputArea);
@@ -57,6 +69,7 @@ public class MainWindow extends Application {
         if (command.isBlank()) {
             return;
         }
+        assert !command.isBlank() : "a submitted command must contain text";
         addMessage(command, true);
         addMessage(engine.execute(command), false);
         input.clear();
@@ -65,14 +78,15 @@ public class MainWindow extends Application {
     private void addMessage(String text, boolean fromUser) {
         Label message = new Label(text.trim());
         message.setWrapText(true);
-        message.setMaxWidth(430);
-        message.setPadding(new Insets(9, 12, 9, 12));
+        message.setMaxWidth(MESSAGE_MAX_WIDTH);
+        message.setPadding(new Insets(MESSAGE_VERTICAL_PADDING, MESSAGE_HORIZONTAL_PADDING,
+                MESSAGE_VERTICAL_PADDING, MESSAGE_HORIZONTAL_PADDING));
         message.setStyle(fromUser
-                ? "-fx-background-color: #2563eb; -fx-text-fill: white; -fx-background-radius: 12px;"
+                ? "-fx-background-color: " + USER_COLOR + "; -fx-text-fill: white; -fx-background-radius: 12px;"
                 : "-fx-background-color: white; -fx-text-fill: #1f2937; -fx-border-color: #d1d5db;"
                 + " -fx-border-radius: 12px; -fx-background-radius: 12px;");
 
-        HBox row = new HBox(8);
+        HBox row = new HBox(MESSAGE_HORIZONTAL_PADDING);
         row.setAlignment(fromUser ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
         Label avatar = createAvatar(fromUser);
         if (fromUser) {
@@ -87,14 +101,14 @@ public class MainWindow extends Application {
         String initials = fromUser ? "U" : "YH";
         Label avatar = new Label(initials);
         avatar.setTextFill(Color.WHITE);
-        avatar.setFont(Font.font("System", FontWeight.BOLD, 11));
+        avatar.setFont(Font.font("System", FontWeight.BOLD, AVATAR_FONT_SIZE));
         avatar.setAlignment(Pos.CENTER);
-        avatar.setMinSize(32, 32);
-        avatar.setMaxSize(32, 32);
-        avatar.setShape(new Circle(16));
+        avatar.setMinSize(AVATAR_SIZE, AVATAR_SIZE);
+        avatar.setMaxSize(AVATAR_SIZE, AVATAR_SIZE);
+        avatar.setShape(new Circle(AVATAR_RADIUS));
         avatar.setStyle(fromUser
-                ? "-fx-background-color: #2563eb;"
-                : "-fx-background-color: #7c3aed;");
+                ? "-fx-background-color: " + USER_COLOR + ";"
+                : "-fx-background-color: " + CHATBOT_COLOR + ";");
         return avatar;
     }
 }
