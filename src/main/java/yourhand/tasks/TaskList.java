@@ -5,6 +5,7 @@ import yourhand.exceptions.YourHandException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.util.stream.IntStream;
 
 /**
  * Stores the tasks managed during one YourHand session.
@@ -102,12 +103,10 @@ public class TaskList {
     /** Returns one-based numbers of tasks whose descriptions contain the keyword. */
     public List<Integer> findTaskNumbersByDescriptionKeyword(String keyword) {
         Pattern pattern = Pattern.compile(Pattern.quote(keyword), Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
-        List<Integer> matchingTaskNumbers = new ArrayList<>();
-        for (int index = 0; index < tasks.size(); index++) {
-            if (pattern.matcher(tasks.get(index).getDescription()).find()) {
-                matchingTaskNumbers.add(index + 1);
-            }
-        }
-        return List.copyOf(matchingTaskNumbers);
+        return IntStream.range(0, tasks.size())
+                .filter(index -> pattern.matcher(tasks.get(index).getDescription()).find())
+                .map(index -> index + 1)
+                .boxed()
+                .toList();
     }
 }
