@@ -86,12 +86,14 @@ public class Storage {
             fields[index] = fields[index].strip();
         }
         validateFields(fields);
+        assert fields.length >= 3 : "validated task entry must have core fields";
         Task task = switch (fields[0]) {
         case "T" -> new Todo(fields[2]);
         case "D" -> new Deadline(fields[2], parseTaskDateTime(fields[3]));
         case "E" -> parseEvent(fields);
         default -> throw new IllegalArgumentException("Unknown task type in saved data.");
         };
+        assert task != null : "a recognized task type must produce a task";
         if (fields[1].equals("1")) {
             task.markAsDone();
         }
