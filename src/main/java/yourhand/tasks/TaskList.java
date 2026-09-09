@@ -53,6 +53,8 @@ public class TaskList {
         if (taskNumber < 1 || taskNumber > tasks.size()) {
             throw new YourHandException("Pick a task number from 1 to " + tasks.size() + ".");
         }
+        assert taskNumber >= 1 && taskNumber <= tasks.size()
+                : "validated task number must refer to an existing task";
     }
 
     /**
