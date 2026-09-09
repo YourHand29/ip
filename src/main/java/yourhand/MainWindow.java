@@ -69,6 +69,7 @@ public class MainWindow extends Application {
         if (command.isBlank()) {
             return;
         }
+        assert !command.isBlank() : "a submitted command must contain text";
         addMessage(command, true);
         addMessage(engine.execute(command), false);
         input.clear();

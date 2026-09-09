@@ -22,6 +22,8 @@ public class YourHandEngine {
 
     /** Creates an engine with collaborators supplied by the caller. */
     public YourHandEngine(Storage storage, TaskList taskList) {
+        assert storage != null : "engine storage must be provided";
+        assert taskList != null : "engine task list must be provided";
         this.storage = storage;
         this.taskList = taskList;
     }
