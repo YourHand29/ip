@@ -59,6 +59,17 @@ public class TaskDateTime {
      * @return Formatted date or date and time.
      */
     public String toDisplayString() {
-        return hasTime ? value.format(DATE_TIME_DISPLAY_FORMAT) : value.format(DATE_DISPLAY_FORMAT);
+        if (!hasTime) {
+            return value.format(DATE_DISPLAY_FORMAT);
+        }
+
+        return formatDateTimeForDisplay();
+    }
+
+    /** Returns a date-time display value with consistent lower-case meridiem text. */
+    private String formatDateTimeForDisplay() {
+        return value.format(DATE_TIME_DISPLAY_FORMAT)
+                .replace("AM", "am")
+                .replace("PM", "pm");
     }
 }
