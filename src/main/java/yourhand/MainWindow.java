@@ -29,6 +29,11 @@ public class MainWindow extends Application {
     private static final int AVATAR_SIZE = 32;
     private static final int AVATAR_RADIUS = AVATAR_SIZE / 2;
     private static final int AVATAR_FONT_SIZE = 11;
+    private static final int MESSAGE_CORNER_RADIUS = 12;
+    private static final int BUTTON_CORNER_RADIUS = 5;
+    private static final int BUTTON_HORIZONTAL_PADDING = 18;
+    private static final int WINDOW_WIDTH = 600;
+    private static final int WINDOW_HEIGHT = 400;
     private static final String USER_COLOR = "#2563eb";
     private static final String CHATBOT_COLOR = "#7c3aed";
 
@@ -49,7 +54,8 @@ public class MainWindow extends Application {
         Button send = new Button("Send");
         send.setDefaultButton(true);
         send.setStyle("-fx-background-color: " + USER_COLOR + "; -fx-text-fill: white;"
-                + " -fx-font-weight: bold; -fx-padding: 9px 18px; -fx-background-radius: 5px;");
+                + " -fx-font-weight: bold; -fx-padding: " + MESSAGE_VERTICAL_PADDING + "px "
+                + BUTTON_HORIZONTAL_PADDING + "px; -fx-background-radius: " + BUTTON_CORNER_RADIUS + "px;");
         send.setOnAction(event -> submitCommand());
         input.setOnAction(event -> submitCommand());
 
@@ -60,7 +66,7 @@ public class MainWindow extends Application {
         HBox.setHgrow(input, Priority.ALWAYS);
         root.setBottom(inputArea);
         stage.setTitle("YourHand");
-        stage.setScene(new Scene(root, 600, 400));
+        stage.setScene(new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT));
         stage.show();
     }
 
@@ -82,9 +88,11 @@ public class MainWindow extends Application {
         message.setPadding(new Insets(MESSAGE_VERTICAL_PADDING, MESSAGE_HORIZONTAL_PADDING,
                 MESSAGE_VERTICAL_PADDING, MESSAGE_HORIZONTAL_PADDING));
         message.setStyle(fromUser
-                ? "-fx-background-color: " + USER_COLOR + "; -fx-text-fill: white; -fx-background-radius: 12px;"
+                ? "-fx-background-color: " + USER_COLOR + "; -fx-text-fill: white; -fx-background-radius: "
+                + MESSAGE_CORNER_RADIUS + "px;"
                 : "-fx-background-color: white; -fx-text-fill: #1f2937; -fx-border-color: #d1d5db;"
-                + " -fx-border-radius: 12px; -fx-background-radius: 12px;");
+                + " -fx-border-radius: " + MESSAGE_CORNER_RADIUS + "px; -fx-background-radius: "
+                + MESSAGE_CORNER_RADIUS + "px;");
 
         HBox row = new HBox(MESSAGE_HORIZONTAL_PADDING);
         row.setAlignment(fromUser ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
