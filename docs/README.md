@@ -54,6 +54,14 @@ Use `find KEYWORD` to display tasks whose descriptions contain the keyword. Matc
 find book
 ```
 
+### View a schedule
+
+Use `view schedule DATE` to display deadlines due on a date and events that occur on or overlap that date. Results are shown in chronological order; to-dos without dates are not included.
+
+```text
+view schedule 2026-09-10
+```
+
 ### Mark a task done
 
 Use `mark TASK_NUMBER` to complete a task.

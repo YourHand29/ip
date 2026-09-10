@@ -1,7 +1,7 @@
 # UI Test Record
 
 Plan: `C:\Users\asus\Documents\NUS CS\Y2S1\CS2103T\iP\ip\test\ui-test-plan.md`
-Run command: `java -cp _temp/ui-test-classes YourHand`
+Run command: `java -cp _temp/ui-test-classes yourhand.YourHand`
 ## Test 1: Reject an empty to-do and unknown command
 **Aim:** Confirm that invalid input is handled through a clear user-visible error message and that the chatbot continues running.
 ### Console input
@@ -1308,6 +1308,84 @@ ____________________________________________________________
 ____________________________________________________________
  Here's your list of responsibilities:
  1.[E][ ] please (from: Feb 22 2222 to: Mar 03 3333)
+____________________________________________________________
+____________________________________________________________
+ See you never :)
+____________________________________________________________
+
+```
+
+**Exit code:** 0
+
+**Result:** PASS
+
+## Test 18: View the schedule for a date
+**Aim:** Confirm that a deadline due on the requested date is displayed by the schedule command and that an undated to-do is not displayed.
+### Console input
+
+```text
+deadline submit report /by 2026-09-10
+todo buy milk
+view schedule 2026-09-10
+bye
+```
+
+### Expected output
+
+```text
+__   __                 _   _                 _
+\ \ / /__  _   _ _ __  | | | | __ _ _ __   __| |
+ \ V / _ \| | | | '__| | |_| |/ _` | '_ \ / _` |
+  | | (_) | |_| | |    |  _  | (_| | | | | (_| |
+  |_|\___/ \__,_|_|    |_| |_|\__,_|_| |_|\__,_|
+____________________________________________________________
+ Selamat Datang 早上好! YourHand 为你服务
+ 你来这干嘛 What are you here for?
+____________________________________________________________
+____________________________________________________________
+ Fine, I've written this down:
+   [D][ ] submit report (by: Sept 10 2026)
+ That's 1 task on your plate.
+____________________________________________________________
+____________________________________________________________
+ Fine, I've written this down:
+   [T][ ] buy milk
+ That's 2 tasks on your plate.
+____________________________________________________________
+____________________________________________________________
+ Schedule for 2026-09-10:
+ 1.[D][ ] submit report (by: Sept 10 2026)
+____________________________________________________________
+____________________________________________________________
+ See you never :)
+____________________________________________________________
+```
+
+### Actual output
+
+```text
+__   __                 _   _                 _
+\ \ / /__  _   _ _ __  | | | | __ _ _ __   __| |
+ \ V / _ \| | | | '__| | |_| |/ _` | '_ \ / _` |
+  | | (_) | |_| | |    |  _  | (_| | | | | (_| |
+  |_|\___/ \__,_|_|    |_| |_|\__,_|_| |_|\__,_|
+____________________________________________________________
+ Selamat Datang 早上好! YourHand 为你服务
+ 你来这干嘛 What are you here for?
+____________________________________________________________
+____________________________________________________________
+ Fine, I've written this down:
+   [D][ ] submit report (by: Sept 10 2026)
+ That's 1 task on your plate.
+____________________________________________________________
+____________________________________________________________
+ Fine, I've written this down:
+   [T][ ] buy milk
+ That's 2 tasks on your plate.
+____________________________________________________________
+____________________________________________________________
+ Schedule for 2026-09-10:
+ 1.[D][ ] submit report (by: Sept 10 2026)
 ____________________________________________________________
 ____________________________________________________________
  See you never :)

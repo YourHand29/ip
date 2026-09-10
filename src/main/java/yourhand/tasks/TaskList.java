@@ -5,6 +5,9 @@ import yourhand.exceptions.YourHandException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.stream.IntStream;
 
 /**
@@ -107,5 +110,38 @@ public class TaskList {
                 .map(index -> index + 1)
                 .boxed()
                 .toList();
+    }
+
+    /** Returns task numbers for deadlines or events that occur on the given date. */
+    public List<Integer> findTaskNumbersForDate(LocalDate date) {
+        return IntStream.range(0, tasks.size())
+                .filter(index -> occursOn(tasks.get(index), date))
+                .boxed()
+                .sorted(Comparator.comparing(this::getScheduleStart))
+                .map(index -> index + 1)
+                .toList();
+    }
+
+    private boolean occursOn(Task task, LocalDate date) {
+        if (task instanceof Deadline deadline) {
+            return deadline.getBy().getValue().toLocalDate().equals(date);
+        }
+        if (task instanceof Event event) {
+            LocalDate startDate = event.getFrom().getValue().toLocalDate();
+            LocalDate endDate = event.getTo().getValue().toLocalDate();
+            return !date.isBefore(startDate) && !date.isAfter(endDate);
+        }
+        return false;
+    }
+
+    private LocalDateTime getScheduleStart(int taskIndex) {
+        Task task = tasks.get(taskIndex);
+        if (task instanceof Deadline deadline) {
+            return deadline.getBy().getValue();
+        }
+        if (task instanceof Event event) {
+            return event.getFrom().getValue();
+        }
+        throw new IllegalArgumentException("Only dated tasks can be scheduled.");
     }
 }

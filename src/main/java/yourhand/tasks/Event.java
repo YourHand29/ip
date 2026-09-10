@@ -20,6 +20,16 @@ public class Event extends Task {
         this.to = to;
     }
 
+    /** Returns this event's starting date or date and time. */
+    public TaskDateTime getFrom() {
+        return from;
+    }
+
+    /** Returns this event's ending date or date and time. */
+    public TaskDateTime getTo() {
+        return to;
+    }
+
     /** Returns this event's ISO start and end dates or date-times in data-file format. */
     @Override
     protected String getFileDetails() {

@@ -1,11 +1,12 @@
 package yourhand.ui;
 
+import java.io.PrintStream;
+import java.time.LocalDate;
+import java.util.Scanner;
+
 import yourhand.exceptions.YourHandException;
 import yourhand.tasks.Task;
 import yourhand.tasks.TaskList;
-
-import java.util.Scanner;
-import java.io.PrintStream;
 
 /**
  * Handles console input and all messages shown by YourHand.
@@ -88,6 +89,19 @@ public class Ui {
         }
         output.println(" Here are the matching tasks in your list:");
         for (int taskNumber : matchingTaskNumbers) {
+            output.println(" " + taskNumber + "." + taskList.getTask(taskNumber));
+        }
+    }
+
+    /** Displays dated tasks occurring on the selected date. */
+    public void showSchedule(TaskList taskList, LocalDate date) throws YourHandException {
+        var taskNumbers = taskList.findTaskNumbersForDate(date);
+        output.println(" Schedule for " + date + ":");
+        if (taskNumbers.isEmpty()) {
+            output.println(" No scheduled tasks for this date.");
+            return;
+        }
+        for (int taskNumber : taskNumbers) {
             output.println(" " + taskNumber + "." + taskList.getTask(taskNumber));
         }
     }

@@ -1,6 +1,7 @@
 package yourhand;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -17,6 +18,7 @@ import javafx.scene.layout.VBox;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.stage.Stage;
+
 
 /** Provides the graphical interface for YourHand. */
 public class MainWindow extends Application {
@@ -40,14 +42,17 @@ public class MainWindow extends Application {
     private final YourHandEngine engine = new YourHandEngine();
     private final VBox messages = new VBox(MESSAGE_SPACING);
     private final TextField input = new TextField();
+    private final ScrollPane conversation = new ScrollPane(messages);
+    private Stage stage;
 
     @Override
     public void start(Stage stage) {
+        this.stage = stage;
         messages.setPadding(new Insets(CONTENT_PADDING));
         messages.setStyle("-fx-background-color: #f5f7fa;");
-        ScrollPane conversation = new ScrollPane(messages);
         conversation.setFitToWidth(true);
         conversation.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        conversation.setStyle(null);
 
         input.setPromptText("Enter a command, e.g. find book");
         input.setStyle("-fx-font-size: 14px; -fx-padding: " + MESSAGE_VERTICAL_PADDING + "px;");
@@ -68,6 +73,8 @@ public class MainWindow extends Application {
         stage.setTitle("YourHand");
         stage.setScene(new Scene(root, WINDOW_WIDTH, WINDOW_HEIGHT));
         stage.show();
+        addWelcomeBanner();
+        scrollToBottom();
     }
 
     private void submitCommand() {
@@ -78,6 +85,19 @@ public class MainWindow extends Application {
         addMessage(command, true);
         addMessage(engine.execute(command), false);
         input.clear();
+        scrollToBottom();
+        if (command.equalsIgnoreCase("bye")) {
+            stage.close();
+        }
+    }
+
+    private void addWelcomeBanner() {
+        addMessage("Selamat Datang 早上好! YourHand 为你服务\n"
+                + "What are you here for?", false);
+    }
+
+    private void scrollToBottom() {
+        Platform.runLater(() -> conversation.setVvalue(1.0));
     }
 
     private void addMessage(String text, boolean fromUser) {
