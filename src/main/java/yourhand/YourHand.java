@@ -7,6 +7,7 @@ import yourhand.commands.ExitCommand;
 import yourhand.commands.FindCommand;
 import yourhand.commands.ListCommand;
 import yourhand.commands.TaskStatusCommand;
+import yourhand.commands.ViewScheduleCommand;
 import yourhand.exceptions.CorruptFileException;
 import yourhand.exceptions.YourHandException;
 import yourhand.storage.Storage;
@@ -39,6 +40,7 @@ public class YourHand {
     private static final Pattern STATUS_PATTERN = Pattern.compile("^(mark|unmark)(?:\\s+(.+))?$");
     private static final Pattern DELETE_PATTERN = Pattern.compile("^delete(?:\\s+(.+))?$");
     private static final Pattern FIND_PATTERN = Pattern.compile("^find(?:\\s+(.*))?$");
+    private static final Pattern VIEW_SCHEDULE_PATTERN = Pattern.compile("^view schedule(?:\\s+(.+))?$");
     private static final DateTimeFormatter ISO_DATE_FORMAT = DateTimeFormatter.ofPattern("uuuu-M-d")
             .withResolverStyle(ResolverStyle.STRICT);
     private static final DateTimeFormatter ISO_COMPACT_DATE_TIME_FORMAT =
@@ -99,6 +101,14 @@ public class YourHand {
                 throw new YourHandException("Tell me what to find, e.g. find book.");
             }
             return new FindCommand(keyword.trim());
+        }
+        Matcher scheduleMatcher = VIEW_SCHEDULE_PATTERN.matcher(command);
+        if (scheduleMatcher.matches()) {
+            String dateText = scheduleMatcher.group(1);
+            if (dateText == null || dateText.isBlank()) {
+                throw new YourHandException("Tell me which date to view, e.g. view schedule 2026-09-10.");
+            }
+            return new ViewScheduleCommand(parseTaskDateTime(dateText.trim()).getValue().toLocalDate());
         }
         Matcher statusMatcher = STATUS_PATTERN.matcher(command);
         if (statusMatcher.matches()) {
