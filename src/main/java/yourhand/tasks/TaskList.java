@@ -18,6 +18,7 @@ public class TaskList {
      * @param task Task to store.
      */
     public void add(Task task) {
+        assert task != null : "task list must not contain null tasks";
         tasks.add(task);
     }
 
@@ -53,8 +54,6 @@ public class TaskList {
         if (taskNumber < 1 || taskNumber > tasks.size()) {
             throw new YourHandException("Pick a task number from 1 to " + tasks.size() + ".");
         }
-        assert taskNumber >= 1 && taskNumber <= tasks.size()
-                : "validated task number must refer to an existing task";
     }
 
     /**
