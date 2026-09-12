@@ -7,14 +7,15 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextField;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.Node;
-import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -36,11 +37,9 @@ public class MainWindow extends Application {
     private static final int MESSAGE_HORIZONTAL_PADDING = 12;
     private static final int MESSAGE_VERTICAL_PADDING = 9;
     private static final int MESSAGE_MAX_WIDTH = 560;
-    private static final int AVATAR_SIZE = 28;
+    private static final int AVATAR_SIZE = 44;
     private static final int AVATAR_RADIUS = AVATAR_SIZE / 2;
-    private static final int AVATAR_FONT_SIZE = 11;
     private static final String USER_COLOR = "#2563eb";
-    private static final String CHATBOT_COLOR = "#7c3aed";
     private static final String ERROR_COLOR = "#b91c1c";
 
     private final YourHandEngine engine = new YourHandEngine();
@@ -53,10 +52,10 @@ public class MainWindow extends Application {
     public void start(Stage stage) {
         this.stage = stage;
         messages.setPadding(new Insets(CONTENT_PADDING));
-        messages.setStyle("-fx-background-color: #f5f7fa;");
+        messages.setStyle("-fx-background-color: transparent;");
         conversation.setFitToWidth(true);
         conversation.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        conversation.setStyle("-fx-background-color: #f5f7fa; -fx-background: #f5f7fa;");
+        conversation.setStyle("-fx-background-color: transparent; -fx-background: transparent;");
         messages.heightProperty().addListener((observable, oldHeight, newHeight) -> scrollToBottom());
         conversation.viewportBoundsProperty()
                 .addListener((observable, oldBounds, newBounds) -> scrollToBottom());
@@ -73,9 +72,13 @@ public class MainWindow extends Application {
         send.setOnAction(event -> submitCommand());
         input.setOnAction(event -> submitCommand());
 
-        BorderPane root = new BorderPane(conversation);
+        StackPane conversationArea = createConversationArea();
+        BorderPane root = new BorderPane();
+        root.setCenter(conversationArea);
         HBox inputArea = new HBox(10, input, send);
         inputArea.setPadding(new Insets(INPUT_PADDING));
+        inputArea.setMinHeight(64);
+        inputArea.setPrefHeight(64);
         inputArea.setStyle("-fx-background-color: white; -fx-border-color: #d1d5db; -fx-border-width: 1 0 0 0;");
         HBox.setHgrow(input, Priority.ALWAYS);
         root.setBottom(inputArea);
@@ -84,6 +87,7 @@ public class MainWindow extends Application {
         stage.setMinWidth(420);
         stage.setMinHeight(300);
         stage.show();
+        conversation.lookup(".viewport").setStyle("-fx-background-color: transparent;");
         addWelcomeBanner();
         scrollToBottom();
     }
@@ -95,6 +99,7 @@ public class MainWindow extends Application {
         }
         assert !command.isBlank() : "a submitted command must contain text";
         addMessage(command, true);
+        Task taskToDelete = getTaskBeforeDeletion(command);
         String response = engine.execute(command);
         try {
             if (command.equalsIgnoreCase("list")) {
@@ -115,6 +120,8 @@ public class MainWindow extends Application {
             } else if (isTaskStatusCommand(command) && !isErrorMessage(response)) {
                 int taskNumber = Integer.parseInt(command.substring(command.lastIndexOf(' ') + 1));
                 addSingleTaskResponse("Task updated", getTask(taskNumber), taskNumber);
+            } else if (taskToDelete != null && !isErrorMessage(response)) {
+                addSingleTaskResponse("Task deleted", taskToDelete, 0);
             } else {
                 addMessage(response, false);
             }
@@ -131,6 +138,25 @@ public class MainWindow extends Application {
     private void addWelcomeBanner() {
         addMessage("YourHand\nYour personal task assistant\n\n"
                 + "Try: todo read book  |  list  |  view schedule 2026-09-10", false);
+    }
+
+    private StackPane createConversationArea() {
+        Image image = new Image(getClass().getResource("/images/kyogre-background.png").toExternalForm());
+        ImageView background = new ImageView(image);
+        background.setPreserveRatio(false);
+        background.setOpacity(0.55);
+        Region readabilityOverlay = new Region();
+        readabilityOverlay.setStyle("-fx-background-color: rgba(240, 249, 255, 0.55);");
+        readabilityOverlay.setMouseTransparent(true);
+
+        StackPane area = new StackPane(background, readabilityOverlay, conversation);
+        area.setMinSize(0, 0);
+        area.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        conversation.setMinSize(0, 0);
+        conversation.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+        background.fitWidthProperty().bind(area.widthProperty());
+        background.fitHeightProperty().bind(area.heightProperty());
+        return area;
     }
 
     private void scrollToBottom() {
@@ -159,7 +185,7 @@ public class MainWindow extends Application {
         row.setMaxWidth(Double.MAX_VALUE);
         row.setAlignment(fromUser ? Pos.CENTER_RIGHT : Pos.CENTER_LEFT);
         message.maxWidthProperty().bind(row.widthProperty().multiply(fromUser ? 0.60 : 0.82));
-        Label avatar = createAvatar(fromUser);
+        Node avatar = createAvatar(fromUser);
         if (fromUser) {
             row.getChildren().addAll(message, avatar);
         } else {
@@ -208,6 +234,18 @@ public class MainWindow extends Application {
         return lowerCaseCommand.startsWith("mark ") || lowerCaseCommand.startsWith("unmark ");
     }
 
+    private Task getTaskBeforeDeletion(String command) {
+        if (!command.toLowerCase().startsWith("delete ")) {
+            return null;
+        }
+        try {
+            int taskNumber = Integer.parseInt(command.substring(command.lastIndexOf(' ') + 1));
+            return engine.getTaskList().getTask(taskNumber);
+        } catch (NumberFormatException | YourHandException exception) {
+            return null;
+        }
+    }
+
     private VBox createResponseCard(String heading) {
         VBox card = new VBox(8);
         card.setPadding(new Insets(12, 16, 12, 16));
@@ -229,7 +267,8 @@ public class MainWindow extends Application {
                 + getTaskColor(task) + "; -fx-border-width: 0 0 0 4;"
                 + " -fx-background-radius: 7px;");
 
-        Label type = new Label(taskNumber + "  " + getTaskType(task));
+        String taskLabel = taskNumber > 0 ? taskNumber + "  " : "";
+        Label type = new Label(taskLabel + getTaskType(task));
         type.setStyle("-fx-font-size: 11px; -fx-font-weight: bold; -fx-text-fill: "
                 + getTaskColor(task) + ";");
         Label description = new Label(task.getDescription());
@@ -312,18 +351,13 @@ public class MainWindow extends Application {
                 + " -fx-padding: 10px 20px; -fx-background-radius: 8px;");
     }
 
-    private Label createAvatar(boolean fromUser) {
-        String initials = fromUser ? "U" : "YH";
-        Label avatar = new Label(initials);
-        avatar.setTextFill(Color.WHITE);
-        avatar.setFont(Font.font("System", FontWeight.BOLD, AVATAR_FONT_SIZE));
-        avatar.setAlignment(Pos.CENTER);
-        avatar.setMinSize(AVATAR_SIZE, AVATAR_SIZE);
-        avatar.setMaxSize(AVATAR_SIZE, AVATAR_SIZE);
-        avatar.setShape(new Circle(AVATAR_RADIUS));
-        avatar.setStyle(fromUser
-                ? "-fx-background-color: " + USER_COLOR + ";"
-                : "-fx-background-color: " + CHATBOT_COLOR + ";");
+    private Node createAvatar(boolean fromUser) {
+        String imagePath = fromUser ? "/images/user-avatar.jpg" : "/images/chatbot-hand.jpg";
+        ImageView avatar = new ImageView(new Image(getClass().getResource(imagePath).toExternalForm()));
+        avatar.setFitWidth(AVATAR_SIZE);
+        avatar.setFitHeight(AVATAR_SIZE);
+        avatar.setPreserveRatio(false);
+        avatar.setClip(new Circle(AVATAR_RADIUS, AVATAR_RADIUS, AVATAR_RADIUS));
         return avatar;
     }
 }
