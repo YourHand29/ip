@@ -4,6 +4,8 @@ import yourhand.exceptions.YourHandException;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -186,5 +188,35 @@ class TaskListTest {
         taskList.add(new Todo("read book"));
 
         assertEquals(List.of(), taskList.findTaskNumbersByDescriptionKeyword("milk"));
+    }
+
+    @Test
+    public void findTaskNumbersForDate_matchingDeadlinesAndEvents_returnsChronologicalNumbers() {
+        TaskList taskList = new TaskList();
+        taskList.add(new Deadline("late report", new TaskDateTime(LocalDateTime.of(2026, 9, 10, 15, 0))));
+        taskList.add(new Event("morning meeting",
+                new TaskDateTime(LocalDateTime.of(2026, 9, 10, 9, 0)),
+                new TaskDateTime(LocalDateTime.of(2026, 9, 10, 10, 0))));
+        taskList.add(new Todo("buy milk"));
+
+        assertEquals(List.of(2, 1), taskList.findTaskNumbersForDate(LocalDate.of(2026, 9, 10)));
+    }
+
+    @Test
+    public void findTaskNumbersForDate_multiDayEventOverlapsDate_returnsEventNumber() {
+        TaskList taskList = new TaskList();
+        taskList.add(new Event("conference",
+                new TaskDateTime(LocalDate.of(2026, 9, 9)),
+                new TaskDateTime(LocalDate.of(2026, 9, 11))));
+
+        assertEquals(List.of(1), taskList.findTaskNumbersForDate(LocalDate.of(2026, 9, 10)));
+    }
+
+    @Test
+    public void findTaskNumbersForDate_noScheduledTasks_returnsEmptyList() {
+        TaskList taskList = new TaskList();
+        taskList.add(new Todo("buy milk"));
+
+        assertEquals(List.of(), taskList.findTaskNumbersForDate(LocalDate.of(2026, 9, 10)));
     }
 }

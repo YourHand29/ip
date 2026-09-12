@@ -8,6 +8,9 @@ import java.time.LocalDateTime;
 import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Pattern;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.stream.IntStream;
 
 /**
@@ -22,6 +25,7 @@ public class TaskList {
      * @param task Task to store.
      */
     public void add(Task task) {
+        assert task != null : "task list must not contain null tasks";
         tasks.add(task);
     }
 
@@ -57,8 +61,6 @@ public class TaskList {
         if (taskNumber < 1 || taskNumber > tasks.size()) {
             throw new YourHandException("Pick a task number from 1 to " + tasks.size() + ".");
         }
-        assert taskNumber >= 1 && taskNumber <= tasks.size()
-                : "validated task number must refer to an existing task";
     }
 
     /**

@@ -97,7 +97,6 @@ public class MainWindow extends Application {
         if (command.isBlank()) {
             return;
         }
-        assert !command.isBlank() : "a submitted command must contain text";
         addMessage(command, true);
         Task taskToDelete = getTaskBeforeDeletion(command);
         String response = engine.execute(command);
@@ -179,7 +178,8 @@ public class MainWindow extends Application {
                 : fromUser
                 ? "-fx-background-color: " + USER_COLOR + "; -fx-text-fill: white; -fx-background-radius: 12px;"
                 : "-fx-background-color: white; -fx-text-fill: #1f2937; -fx-border-color: #d1d5db;"
-                + " -fx-border-radius: 12px; -fx-background-radius: 12px;");
+                + " -fx-border-radius: " + MESSAGE_CORNER_RADIUS + "px; -fx-background-radius: "
+                + MESSAGE_CORNER_RADIUS + "px;");
 
         HBox row = new HBox(MESSAGE_HORIZONTAL_PADDING);
         row.setMaxWidth(Double.MAX_VALUE);
