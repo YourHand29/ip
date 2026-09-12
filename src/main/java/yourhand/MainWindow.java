@@ -36,6 +36,7 @@ public class MainWindow extends Application {
     private static final int INPUT_PADDING = 10;
     private static final int MESSAGE_HORIZONTAL_PADDING = 12;
     private static final int MESSAGE_VERTICAL_PADDING = 9;
+    private static final int MESSAGE_CORNER_RADIUS = 12;
     private static final int MESSAGE_MAX_WIDTH = 560;
     private static final int AVATAR_SIZE = 44;
     private static final int AVATAR_RADIUS = AVATAR_SIZE / 2;
