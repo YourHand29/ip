@@ -17,6 +17,11 @@ public class Deadline extends Task {
         this.by = by;
     }
 
+    /** Returns the date or date and time by which this task is due. */
+    public TaskDateTime getBy() {
+        return by;
+    }
+
     /** Returns this deadline's ISO due date or date-time in data-file format. */
     @Override
     protected String getFileDetails() {
