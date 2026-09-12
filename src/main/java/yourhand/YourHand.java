@@ -106,9 +106,11 @@ public class YourHand {
         if (scheduleMatcher.matches()) {
             String dateText = scheduleMatcher.group(1);
             if (dateText == null || dateText.isBlank()) {
-                throw new YourHandException("Tell me which date to view, e.g. view schedule 2026-09-10.");
+                throw new YourHandException(
+                        "Tell me which date to view, e.g. view schedule 2026-09-10.");
             }
-            return new ViewScheduleCommand(parseTaskDateTime(dateText.trim()).getValue().toLocalDate());
+            return new ViewScheduleCommand(
+                    parseTaskDateTime(dateText.trim()).getValue().toLocalDate());
         }
         Matcher statusMatcher = STATUS_PATTERN.matcher(command);
         if (statusMatcher.matches()) {
@@ -230,7 +232,7 @@ public class YourHand {
     }
 
     /** Parses a supported task date or date-time and presents parse errors as chatbot errors. */
-    private static TaskDateTime parseTaskDateTime(String dateText) throws YourHandException {
+    static TaskDateTime parseTaskDateTime(String dateText) throws YourHandException {
         try {
             return new TaskDateTime(LocalDate.parse(dateText, ISO_DATE_FORMAT));
         } catch (DateTimeParseException exception) {

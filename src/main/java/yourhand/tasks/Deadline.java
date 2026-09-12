@@ -17,7 +17,7 @@ public class Deadline extends Task {
         this.by = by;
     }
 
-    /** Returns this deadline's due date or date and time. */
+    /** Returns the date or date and time by which this task is due. */
     public TaskDateTime getBy() {
         return by;
     }

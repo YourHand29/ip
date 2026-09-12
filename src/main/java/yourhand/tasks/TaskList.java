@@ -3,6 +3,9 @@ package yourhand.tasks;
 import yourhand.exceptions.YourHandException;
 
 import java.util.ArrayList;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Pattern;
 import java.time.LocalDate;
@@ -112,7 +115,7 @@ public class TaskList {
                 .toList();
     }
 
-    /** Returns task numbers for deadlines or events that occur on the given date. */
+    /** Returns one-based numbers of dated tasks occurring on the given date. */
     public List<Integer> findTaskNumbersForDate(LocalDate date) {
         return IntStream.range(0, tasks.size())
                 .filter(index -> occursOn(tasks.get(index), date))

@@ -8,6 +8,10 @@ import yourhand.exceptions.YourHandException;
 import yourhand.tasks.Task;
 import yourhand.tasks.TaskList;
 
+import java.util.Scanner;
+import java.io.PrintStream;
+import java.time.LocalDate;
+
 /**
  * Handles console input and all messages shown by YourHand.
  */

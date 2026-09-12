@@ -40,4 +40,9 @@ public class YourHandEngine {
         }
         return response.toString();
     }
+
+    /** Returns the current task list for graphical views. */
+    TaskList getTaskList() {
+        return taskList;
+    }
 }

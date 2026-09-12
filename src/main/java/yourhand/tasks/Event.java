@@ -20,12 +20,12 @@ public class Event extends Task {
         this.to = to;
     }
 
-    /** Returns this event's starting date or date and time. */
+    /** Returns the date or date and time when this event starts. */
     public TaskDateTime getFrom() {
         return from;
     }
 
-    /** Returns this event's ending date or date and time. */
+    /** Returns the date or date and time when this event ends. */
     public TaskDateTime getTo() {
         return to;
     }
