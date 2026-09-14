@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Tests for task state changes and common task representations. */
@@ -36,5 +37,27 @@ class TaskTest {
         assertTrue(task.markAsUndone());
         assertEquals(" ", task.getStatusIcon());
         assertFalse(task.markAsUndone());
+    }
+
+    @Test
+    public void task_invalidDescription_throwsIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> new Todo(null));
+        assertThrows(IllegalArgumentException.class, () -> new Todo("   "));
+        assertThrows(IllegalArgumentException.class, () -> new Todo("contains | delimiter"));
+        assertThrows(IllegalArgumentException.class, () -> new Todo("contains\nnewline"));
+    }
+
+    @Test
+    public void deadline_missingDate_throwsIllegalArgumentException() {
+        assertThrows(IllegalArgumentException.class, () -> new Deadline("report", null));
+    }
+
+    @Test
+    public void event_invalidRangeOrDate_throwsIllegalArgumentException() {
+        TaskDateTime start = new TaskDateTime(java.time.LocalDate.of(2026, 9, 10));
+        TaskDateTime end = new TaskDateTime(java.time.LocalDate.of(2026, 9, 10));
+
+        assertThrows(IllegalArgumentException.class, () -> new Event("meeting", start, end));
+        assertThrows(IllegalArgumentException.class, () -> new Event("meeting", null, end));
     }
 }

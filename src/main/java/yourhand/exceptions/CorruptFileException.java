@@ -5,12 +5,11 @@ package yourhand.exceptions;
  */
 public class CorruptFileException extends Exception {
     /**
-     * Creates an exception describing why the saved data cannot be loaded.
+     * Creates an exception describing malformed saved data.
      *
-     * @param message Explanation of the invalid saved data.
      * @param cause The original parsing error.
      */
-    public CorruptFileException(String message, Throwable cause) {
-        super(message, cause);
+    public CorruptFileException(Throwable cause) {
+        super("A saved task entry is malformed.", cause);
     }
 }

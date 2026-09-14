@@ -2,6 +2,7 @@ package yourhand.ui;
 
 import java.io.PrintStream;
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.Scanner;
 
 import yourhand.exceptions.YourHandException;
@@ -13,17 +14,23 @@ import yourhand.tasks.TaskList;
  */
 public class Ui {
     private static final String SEPARATOR = "____________________________________________________________";
-    private final Scanner scanner = new Scanner(System.in);
+    private final Scanner scanner;
     private final PrintStream output;
 
     /** Creates a UI that writes responses to standard output. */
     public Ui() {
-        this(System.out);
+        this(new Scanner(System.in), System.out);
     }
 
     /** Creates a UI that writes responses to the given output stream. */
     public Ui(PrintStream output) {
-        this.output = output;
+        this(new Scanner(System.in), output);
+    }
+
+    /** Creates a UI with controllable input and output streams for automated tests. */
+    Ui(Scanner scanner, PrintStream output) {
+        this.scanner = Objects.requireNonNull(scanner, "input scanner must be provided");
+        this.output = Objects.requireNonNull(output, "output stream must be provided");
     }
 
     /** Displays the application banner and greeting. */

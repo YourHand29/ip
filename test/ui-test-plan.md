@@ -24,6 +24,36 @@ Launch the JavaFX application, then enter an invalid command such as `hello` and
 The header shows the hand image and `YourHand`. The opening introduction and the help card show the hand image inside the response card. For `hello`, the reaction image appears above the invalid-command text.
 ```
 
+## Manual compatibility checks
+
+### Aim
+
+Confirm that the JavaFX presentation remains usable across common environments that are not covered by unit tests.
+
+### Matrix
+
+Run the application on each available operating system and check at least narrow laptop, 1080p, and high-DPI display settings. Repeat the basic command flow (`help`, add task, `list`, invalid command, `bye`) with English and a non-English OS locale.
+
+### Expected output
+
+The window opens without missing-resource crashes, text remains readable without clipping, the input and Send button remain accessible, and dates, task status, and error messages remain understandable regardless of OS language settings.
+
+## Manual GUI check: corrupted startup data
+
+### Input
+
+Temporarily replace `data/yourhand.txt` with a malformed entry such as:
+
+```text
+D | 0 | report | 2026-02-30
+```
+
+Launch the GUI and enter `list`.
+
+### Expected output
+
+The GUI displays a red error card containing `Man got hacked ggwp`, starts with an empty task list, and remains usable for subsequent commands.
+
 ## Test case: Reject an empty to-do and unknown command
 
 ### Aim
@@ -763,7 +793,7 @@ ____________________________________________________________
  你来这干嘛 What are you here for?
 ____________________________________________________________
 ____________________________________________________________
- Use yyyy-M-d, yyyy-M-d HHmm, yyyy-M-d HH:mm, or d/M/yyyy HHmm.
+ Date [2026-02-30] is impossible. Brother even leap year don't even have 30 days what nonsense calendar you using? Check your date again >:(
 ____________________________________________________________
 ____________________________________________________________
  Your event must end after it starts.

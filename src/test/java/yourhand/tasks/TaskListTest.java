@@ -37,6 +37,35 @@ class TaskListTest {
     }
 
     @Test
+    public void addTask_nullTask_throwsIllegalArgumentException() {
+        TaskList taskList = new TaskList();
+
+        assertThrows(IllegalArgumentException.class, () -> taskList.add(null));
+    }
+
+    @Test
+    public void addAt_validIndex_insertsTaskAtRequestedPosition() throws YourHandException {
+        TaskList taskList = new TaskList();
+        Todo firstTask = new Todo("first");
+        Todo insertedTask = new Todo("inserted");
+        taskList.add(firstTask);
+
+        taskList.addAt(0, insertedTask);
+
+        assertSame(insertedTask, taskList.getTask(1));
+        assertSame(firstTask, taskList.getTask(2));
+    }
+
+    @Test
+    public void addAt_invalidIndexOrTask_throwsIllegalArgumentException() {
+        TaskList taskList = new TaskList();
+
+        assertThrows(IllegalArgumentException.class, () -> taskList.addAt(-1, new Todo("task")));
+        assertThrows(IllegalArgumentException.class, () -> taskList.addAt(1, new Todo("task")));
+        assertThrows(IllegalArgumentException.class, () -> taskList.addAt(0, null));
+    }
+
+    @Test
     public void getTask_validOneBasedNumber_returnsRequestedTask() throws YourHandException {
         TaskList taskList = new TaskList();
         Todo firstTask = new Todo("read book");
