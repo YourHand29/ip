@@ -12,6 +12,14 @@ Task numbers shown by `list` start at 1. Dates and times are stored exactly as t
 
 ## Commands
 
+### Show available commands
+
+Use `help` to display the commands supported by YourHand.
+
+```text
+help
+```
+
 ### Add a to-do
 
 Use `todo DESCRIPTION` for a task without a date or time.

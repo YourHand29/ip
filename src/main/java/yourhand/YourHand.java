@@ -5,6 +5,7 @@ import yourhand.commands.Command;
 import yourhand.commands.DeleteCommand;
 import yourhand.commands.ExitCommand;
 import yourhand.commands.FindCommand;
+import yourhand.commands.HelpCommand;
 import yourhand.commands.ListCommand;
 import yourhand.commands.TaskStatusCommand;
 import yourhand.commands.ViewScheduleCommand;
@@ -88,6 +89,9 @@ public class YourHand {
      * @throws YourHandException if the command is invalid
      */
     static Command parseCommand(String command) throws YourHandException {
+        if (command.equals("help")) {
+            return new HelpCommand();
+        }
         if (command.equals("bye")) {
             return new ExitCommand();
         }
@@ -201,8 +205,7 @@ public class YourHand {
             throw new YourHandException("Walao when the even happening. Try: event DESCRIPTION /from START /to END");
         }
 
-        throw new YourHandException("Hmm, I don't speak that yet. Try todo, deadline, event, list, mark, "
-                + "unmark, delete, or bye.");
+        throw new YourHandException("Hmm, I don't speak that yet. Try help to see what I can do.");
     }
 
     /** Returns whether a command begins with a command word. */
