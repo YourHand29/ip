@@ -38,7 +38,7 @@ class CommandTest {
                 .execute(taskList, ui(output), storage("tasks.txt"));
 
         assertEquals(1, taskList.size());
-        assertTrue(output.toString().contains("written this down"));
+        assertTrue(output.toString().contains("I'll note this down for you haiz"));
     }
 
     @Test
@@ -132,7 +132,7 @@ class CommandTest {
         command.execute(new TaskList(), ui(output), storage("tasks.txt"));
 
         assertTrue(command.isExit());
-        assertTrue(output.toString().contains("See you later"));
+        assertTrue(output.toString().contains("See you never :)"));
     }
 
     private Storage storage(String fileName) {

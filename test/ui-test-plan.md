@@ -54,6 +54,16 @@ Launch the GUI and enter `list`.
 
 The GUI displays a red error card containing `Man got hacked ggwp`, starts with an empty task list, and remains usable for subsequent commands.
 
+## Manual GUI check: delayed bye message
+
+### Input
+
+Launch the GUI and enter `bye`.
+
+### Expected output
+
+The chat displays `See you never :)` immediately, remains visible for approximately five seconds, and then the GUI closes automatically.
+
 ## Test case: Reject an empty to-do and unknown command
 
 ### Aim
@@ -84,7 +94,7 @@ ____________________________________________________________
  You handed me an empty to-do. Try: todo borrow book
 ____________________________________________________________
 ____________________________________________________________
- Hmm, I don't speak that yet. Try todo, deadline, event, list, mark, unmark, delete, or bye.
+ Hmm, I don't speak that yet. Try help to see what I can do.
 ____________________________________________________________
 ____________________________________________________________
  See you never :)
@@ -166,7 +176,7 @@ ____________________________________________________________
    [T][X] read book
 ____________________________________________________________
 ____________________________________________________________
- Unmarked. Check pls:
+ Stop scamming me >:(
    [T][ ] read book
 ____________________________________________________________
 ____________________________________________________________
@@ -496,11 +506,11 @@ ____________________________________________________________
    [T][X] write essay
 ____________________________________________________________
 ____________________________________________________________
- Unmarked. Check pls:
+ Stop scamming me >:(
    [T][ ] write essay
 ____________________________________________________________
 ____________________________________________________________
- That task was already waiting for you. No change:
+ Thanks for reminding me of your laziness...
    [T][ ] write essay
 ____________________________________________________________
 ____________________________________________________________
@@ -624,7 +634,7 @@ ____________________________________________________________
  Selamat Datang 早上好! YourHand 为你服务
  你来这干嘛 What are you here for?
 ____________________________________________________________
- Your saved data file looks corrupted, so I didn't load it.
+ Man got hacked ggwp
 ____________________________________________________________
  Your task list is empty.
 ____________________________________________________________

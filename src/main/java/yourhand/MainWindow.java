@@ -2,6 +2,7 @@ package yourhand;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.animation.PauseTransition;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -17,6 +18,7 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.util.Duration;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.stage.Stage;
@@ -46,7 +48,10 @@ public class MainWindow extends Application {
     private static final int INTRODUCTION_IMAGE_WIDTH = 180;
     private static final int AVATAR_SIZE = 44;
     private static final int AVATAR_RADIUS = AVATAR_SIZE / 2;
-    private static final String USER_COLOR = "#2563eb";
+    private static final int GOODBYE_DELAY_SECONDS = 5;
+    private static final String USER_BUBBLE_COLOR = "rgba(96, 165, 250, 0.78)";
+    private static final String BOT_BUBBLE_COLOR = "rgba(255, 255, 255, 0.78)";
+    private static final String BACKGROUND_TINT = "rgba(240, 249, 255, 0.28)";
     private static final String ERROR_COLOR = "#b91c1c";
 
     private final YourHandEngine engine = new YourHandEngine();
@@ -68,14 +73,16 @@ public class MainWindow extends Application {
                 .addListener((observable, oldBounds, newBounds) -> scrollToBottom());
 
         input.setPromptText("Type a command, or type help");
-        input.setStyle("-fx-font-size: 14px; -fx-padding: " + MESSAGE_VERTICAL_PADDING + "px;");
+        input.setStyle("-fx-font-size: 14px; -fx-padding: " + MESSAGE_VERTICAL_PADDING
+                + "px; -fx-background-color: " + BOT_BUBBLE_COLOR
+                + "; -fx-border-color: rgba(209, 213, 219, 0.75); -fx-border-radius: 8px;");
         Button send = new Button("Send");
         send.setDefaultButton(true);
-        setSendButtonStyle(send, USER_COLOR);
-        send.setOnMouseEntered(event -> setSendButtonStyle(send, "#1d4ed8"));
-        send.setOnMouseExited(event -> setSendButtonStyle(send, USER_COLOR));
-        send.setOnMousePressed(event -> setSendButtonStyle(send, "#1e40af"));
-        send.setOnMouseReleased(event -> setSendButtonStyle(send, "#1d4ed8"));
+        setSendButtonStyle(send, USER_BUBBLE_COLOR);
+        send.setOnMouseEntered(event -> setSendButtonStyle(send, "rgba(59, 130, 246, 0.86)"));
+        send.setOnMouseExited(event -> setSendButtonStyle(send, USER_BUBBLE_COLOR));
+        send.setOnMousePressed(event -> setSendButtonStyle(send, "rgba(37, 99, 235, 0.90)"));
+        send.setOnMouseReleased(event -> setSendButtonStyle(send, "rgba(59, 130, 246, 0.86)"));
         send.setOnAction(event -> submitCommand());
         input.setOnAction(event -> submitCommand());
 
@@ -87,7 +94,8 @@ public class MainWindow extends Application {
         inputArea.setPadding(new Insets(INPUT_PADDING));
         inputArea.setMinHeight(64);
         inputArea.setPrefHeight(64);
-        inputArea.setStyle("-fx-background-color: white; -fx-border-color: #d1d5db; -fx-border-width: 1 0 0 0;");
+        inputArea.setStyle("-fx-background-color: " + BACKGROUND_TINT
+                + "; -fx-border-color: rgba(209, 213, 219, 0.75); -fx-border-width: 1 0 0 0;");
         HBox.setHgrow(input, Priority.ALWAYS);
         root.setBottom(inputArea);
         stage.setTitle("YourHand");
@@ -98,7 +106,7 @@ public class MainWindow extends Application {
         conversation.lookup(".viewport").setStyle("-fx-background-color: transparent;");
         addWelcomeBanner();
         if (engine.hasStartupWarning()) {
-            addInvalidCommandResponse("Man got hacked ggwp");
+            addInvalidCommandResponse(engine.getStartupWarning());
         }
         scrollToBottom();
     }
@@ -123,25 +131,26 @@ public class MainWindow extends Application {
                 String dateText = command.substring("view schedule ".length()).trim();
                 LocalDate date = YourHand.parseTaskDateTime(dateText).getValue().toLocalDate();
                 List<Integer> taskNumbers = engine.getTaskList().findTaskNumbersForDate(date);
-                addTaskNumbersResponse("Schedule for " + date, taskNumbers);
+                addResponseWithTasks(response, taskNumbers);
             } else if (command.toLowerCase().startsWith("find ")) {
                 String keyword = command.substring("find ".length()).trim();
                 List<Integer> taskNumbers = engine.getTaskList()
                         .findTaskNumbersByDescriptionKeyword(keyword);
-                addTaskNumbersResponse("Matching tasks", taskNumbers);
+                addResponseWithTasks(response, taskNumbers);
             } else if (isTaskCreationCommand(command)) {
                 List<Task> tasks = engine.getTaskList().getTasks();
-                addSingleTaskResponse("Task added", tasks.get(tasks.size() - 1), tasks.size());
+                addResponseWithTask(response, tasks.get(tasks.size() - 1), tasks.size());
             } else if (isTaskStatusCommand(command)) {
                 int taskNumber = Integer.parseInt(command.substring(command.lastIndexOf(' ') + 1));
-                addSingleTaskResponse("Task updated", getTask(taskNumber), taskNumber);
+                addResponseWithTask(response, getTask(taskNumber), taskNumber);
             } else if (taskToDelete != null) {
-                addSingleTaskResponse("Task deleted", taskToDelete, 0);
+                addResponseWithTask(response, taskToDelete, 0);
             } else {
                 addMessage(response, false);
             }
         } catch (YourHandException exception) {
-            addInvalidCommandResponse(response);
+            LOGGER.log(Level.WARNING, "Unable to render a command response", exception);
+            addInvalidCommandResponse(exception.getMessage());
         } catch (RuntimeException exception) {
             LOGGER.log(Level.WARNING, "Unable to render a command response", exception);
             addInvalidCommandResponse("I couldn't display that response. Please try again.");
@@ -149,7 +158,9 @@ public class MainWindow extends Application {
         input.clear();
         scrollToBottom();
         if (command.equalsIgnoreCase("bye")) {
-            stage.close();
+            PauseTransition goodbyeDelay = new PauseTransition(Duration.seconds(GOODBYE_DELAY_SECONDS));
+            goodbyeDelay.setOnFinished(event -> stage.close());
+            goodbyeDelay.play();
         }
     }
 
@@ -157,7 +168,7 @@ public class MainWindow extends Application {
         VBox welcome = new VBox(8);
         welcome.setMaxWidth(MESSAGE_MAX_WIDTH);
         welcome.setPadding(new Insets(12, 16, 12, 16));
-        welcome.setStyle("-fx-background-color: white; -fx-border-color: #d1d5db;"
+        welcome.setStyle("-fx-background-color: " + BOT_BUBBLE_COLOR + "; -fx-border-color: #d1d5db;"
                 + " -fx-border-radius: 12px; -fx-background-radius: 12px;");
 
         ImageView hand = createHandImage(INTRODUCTION_IMAGE_WIDTH);
@@ -189,17 +200,17 @@ public class MainWindow extends Application {
 
     private StackPane createConversationArea() {
         Region readabilityOverlay = new Region();
-        readabilityOverlay.setStyle("-fx-background-color: rgba(240, 249, 255, 0.55);");
+        readabilityOverlay.setStyle("-fx-background-color: " + BACKGROUND_TINT + ";");
         readabilityOverlay.setMouseTransparent(true);
 
-        Image image = loadImage("/images/kyogre-background.png");
+        Image image = loadImage("/images/final-destination.jpg");
         StackPane area;
         if (image == null) {
             area = new StackPane(readabilityOverlay, conversation);
         } else {
             ImageView background = new ImageView(image);
             background.setPreserveRatio(false);
-            background.setOpacity(0.55);
+            background.setOpacity(0.72);
             area = new StackPane(background, readabilityOverlay, conversation);
             background.fitWidthProperty().bind(area.widthProperty());
             background.fitHeightProperty().bind(area.heightProperty());
@@ -226,11 +237,13 @@ public class MainWindow extends Application {
                 MESSAGE_VERTICAL_PADDING, MESSAGE_HORIZONTAL_PADDING));
         boolean isError = !fromUser && isErrorMessage(text);
         message.setStyle(isError
-                ? "-fx-background-color: #fee2e2; -fx-text-fill: " + ERROR_COLOR
+                ? "-fx-background-color: rgba(254, 226, 226, 0.92); -fx-text-fill: " + ERROR_COLOR
                 + "; -fx-border-color: #fca5a5; -fx-border-radius: 12px; -fx-background-radius: 12px;"
                 : fromUser
-                ? "-fx-background-color: " + USER_COLOR + "; -fx-text-fill: white; -fx-background-radius: 12px;"
-                : "-fx-background-color: white; -fx-text-fill: #1f2937; -fx-border-color: #d1d5db;"
+                ? "-fx-background-color: " + USER_BUBBLE_COLOR
+                + "; -fx-text-fill: white; -fx-background-radius: 12px;"
+                : "-fx-background-color: " + BOT_BUBBLE_COLOR
+                + "; -fx-text-fill: #1f2937; -fx-border-color: #d1d5db;"
                 + " -fx-border-radius: " + MESSAGE_CORNER_RADIUS + "px; -fx-background-radius: "
                 + MESSAGE_CORNER_RADIUS + "px;");
 
@@ -267,6 +280,48 @@ public class MainWindow extends Application {
             card.getChildren().add(createTaskCard(getTask(taskNumber), taskNumber));
         }
         addBotNode(card);
+    }
+
+    private void addResponseWithTasks(String response, List<Integer> taskNumbers) {
+        VBox card = createResponseCard(firstResponseLine(response));
+        addResponseDetails(card, response, taskNumbers.stream()
+                .map(this::getTask)
+                .toList());
+        if (taskNumbers.isEmpty()) {
+            addEmptyResponse(card);
+        }
+        for (int taskNumber : taskNumbers) {
+            card.getChildren().add(createTaskCard(getTask(taskNumber), taskNumber));
+        }
+        addBotNode(card);
+    }
+
+    private void addResponseWithTask(String response, Task task, int taskNumber) {
+        VBox card = createResponseCard(firstResponseLine(response));
+        List<Task> responseTasks = task == null ? List.of() : List.of(task);
+        addResponseDetails(card, response, responseTasks);
+        if (task != null) {
+            card.getChildren().add(createTaskCard(task, taskNumber));
+        }
+        addBotNode(card);
+    }
+
+    private void addResponseDetails(VBox card, String response, List<Task> tasks) {
+        String[] lines = response.trim().split("\\R");
+        for (int index = 1; index < lines.length; index++) {
+            String line = lines[index];
+            String trimmedLine = line.trim();
+            if (!trimmedLine.isEmpty() && tasks.stream().noneMatch(task -> task.toString().equals(trimmedLine))) {
+                Label detail = new Label(trimmedLine);
+                detail.setWrapText(true);
+                detail.setStyle("-fx-font-size: 14px; -fx-text-fill: #374151;");
+                card.getChildren().add(detail);
+            }
+        }
+    }
+
+    private String firstResponseLine(String response) {
+        return response.trim().split("\\R", 2)[0];
     }
 
     private void addSingleTaskResponse(String heading, Task task, int taskNumber) {
@@ -309,7 +364,7 @@ public class MainWindow extends Application {
         VBox errorResponse = new VBox(8);
         errorResponse.setMaxWidth(MESSAGE_MAX_WIDTH);
         errorResponse.setPadding(new Insets(10, 12, 10, 12));
-        errorResponse.setStyle("-fx-background-color: #fee2e2; -fx-border-color: #fca5a5;"
+        errorResponse.setStyle("-fx-background-color: rgba(254, 226, 226, 0.92); -fx-border-color: #fca5a5;"
                 + " -fx-border-radius: 12px; -fx-background-radius: 12px;");
 
         Label errorMessage = new Label(response.trim());
@@ -385,7 +440,7 @@ public class MainWindow extends Application {
         VBox card = new VBox(8);
         card.setPadding(new Insets(12, 16, 12, 16));
         card.setMaxWidth(MESSAGE_MAX_WIDTH);
-        card.setStyle("-fx-background-color: white; -fx-border-color: #d1d5db;"
+        card.setStyle("-fx-background-color: " + BOT_BUBBLE_COLOR + "; -fx-border-color: #d1d5db;"
                 + " -fx-border-radius: 12px; -fx-background-radius: 12px;");
 
         Label title = new Label(heading);
@@ -450,7 +505,7 @@ public class MainWindow extends Application {
     }
 
     private void addEmptyResponse(VBox card) {
-        Label empty = new Label("Nothing to show here yet.");
+        Label empty = new Label("As empty as your wallet");
         empty.setStyle("-fx-text-fill: #6b7280; -fx-font-style: italic;");
         card.getChildren().add(empty);
     }

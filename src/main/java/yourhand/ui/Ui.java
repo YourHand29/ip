@@ -64,7 +64,7 @@ public class Ui {
 
     /** Displays the farewell message. */
     public void showGoodbyeMessage() {
-        output.println(" See you later. Keep things in hand!");
+        output.println(" See you never :)");
     }
 
     /** Displays the commands supported by YourHand. */
@@ -103,7 +103,7 @@ public class Ui {
     /** Displays every task in the current list, or an empty-list message. */
     public void showTaskList(TaskList taskList) {
         if (taskList.isEmpty()) {
-            output.println(" Your task list is empty.");
+            output.println(" As empty as your wallet");
             return;
         }
 
@@ -149,10 +149,10 @@ public class Ui {
 
     /** Displays confirmation that a task was added. */
     public void showTaskAdded(Task task, int taskCount) {
-        output.println(" Fine, I've written this down:");
+        output.println(" Fine, I'll note this down for you haiz:");
         output.println("   " + task);
         String taskWord = taskCount == 1 ? "task" : "tasks";
-        output.println(" That's " + taskCount + " " + taskWord + " on your plate.");
+        output.println(" That's " + taskCount + " " + taskWord + " on your plate. Have fun :)");
     }
 
     /** Displays the result of marking or unmarking a task. */
@@ -163,15 +163,15 @@ public class Ui {
                     : " That task was already done. Double-checking never hurts:");
         } else {
             output.println(wasUpdated
-                    ? " Unmarked. Check pls:"
-                    : " That task was already waiting for you. No change:");
+                    ? " Stop scamming me >:("
+                    : " Thanks for reminding me of your laziness...");
         }
         output.println("   " + task);
     }
 
     /** Displays confirmation that a task was removed. */
     public void showTaskDeleted(Task task, int taskCount) {
-        output.println(" Poof. I've removed this task:");
+        output.println(" Poof. You ran away from your responsibility:");
         output.println("   " + task);
         String taskWord = taskCount == 1 ? "task" : "tasks";
         output.println(" That's " + taskCount + " " + taskWord + " left on your plate.");
@@ -179,11 +179,11 @@ public class Ui {
 
     /** Informs the user that no tasks were loaded from malformed saved data. */
     public void showCorruptFileWarning() {
-        output.println(" Your saved data file looks corrupted, so I didn't load it.");
+        output.println(" Man got hacked ggwp");
     }
 
     /** Informs the user that saved data could not be read. */
     public void showLoadingError() {
-        output.println(" I couldn't load your saved tasks. Starting with a clean slate.");
+        output.println(" Hands can't save you from load failure zzz");
     }
 }

@@ -143,7 +143,7 @@ class YourHandTest {
         TaskList taskList = YourHand.loadTasks(new Storage(dataFile), new Ui(new PrintStream(output)));
 
         assertTrue(taskList.isEmpty());
-        assertTrue(output.toString().contains("corrupted"));
+        assertTrue(output.toString().contains("Man got hacked ggwp"));
     }
 
     @Test
@@ -154,7 +154,7 @@ class YourHandTest {
         TaskList taskList = YourHand.loadTasks(new Storage(directoryPath), new Ui(new PrintStream(output)));
 
         assertTrue(taskList.isEmpty());
-        assertTrue(output.toString().contains("couldn't load"));
+        assertTrue(output.toString().contains("Hands can't save you from load failure zzz"));
     }
 
     private Ui silentUi() {

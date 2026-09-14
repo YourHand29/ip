@@ -20,7 +20,7 @@ class YourHandEngineTest {
 
         String response = engine.execute("todo borrow book");
 
-        assertTrue(response.contains("I've written this down"));
+        assertTrue(response.contains("I'll note this down for you haiz"));
         assertTrue(response.contains("borrow book"));
     }
 
@@ -62,7 +62,7 @@ class YourHandEngineTest {
         ExecutionResult result = engine.executeWithResult("todo read book");
 
         assertTrue(result.successful());
-        assertTrue(result.message().contains("written this down"));
+        assertTrue(result.message().contains("I'll note this down for you haiz"));
     }
 
     @Test

@@ -17,25 +17,30 @@ public class YourHandEngine {
     private static final Logger LOGGER = Logger.getLogger(YourHandEngine.class.getName());
     private final Storage storage;
     private final TaskList taskList;
-    private final boolean startupWarning;
+    private final String startupWarning;
 
     /** Creates an engine using the default YourHand data file. */
     public YourHandEngine() {
         storage = new Storage();
         ByteArrayOutputStream startupOutput = new ByteArrayOutputStream();
         taskList = YourHand.loadTasks(storage, new Ui(new PrintStream(startupOutput)));
-        startupWarning = startupOutput.size() > 0;
+        startupWarning = startupOutput.toString().trim();
     }
 
     /** Creates an engine with collaborators supplied by the caller. */
     public YourHandEngine(Storage storage, TaskList taskList) {
         this.storage = Objects.requireNonNull(storage, "engine storage must be provided");
         this.taskList = Objects.requireNonNull(taskList, "engine task list must be provided");
-        startupWarning = false;
+        startupWarning = "";
     }
 
     /** Returns whether loading saved data produced a startup warning. */
     public boolean hasStartupWarning() {
+        return !startupWarning.isEmpty();
+    }
+
+    /** Returns the startup warning that should be shown to the user, if any. */
+    public String getStartupWarning() {
         return startupWarning;
     }
 

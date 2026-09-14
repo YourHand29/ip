@@ -26,7 +26,7 @@ class UiTest {
         TaskList taskList = new TaskList();
 
         ui.showTaskList(taskList);
-        assertTrue(output.toString().contains("task list is empty"));
+        assertTrue(output.toString().contains("As empty as your wallet"));
 
         taskList.add(new Todo("read book"));
         ui.showTaskList(taskList);
@@ -63,16 +63,20 @@ class UiTest {
         ui.showTaskAdded(task, 1);
         ui.showTaskStatus(task, true, true);
         ui.showTaskStatus(task, true, false);
+        ui.showTaskStatus(task, false, true);
+        ui.showTaskStatus(task, false, false);
         ui.showTaskDeleted(task, 0);
         ui.showCorruptFileWarning();
         ui.showLoadingError();
 
         String text = output.toString();
         assertTrue(text.contains("already has that description"));
-        assertTrue(text.contains("written this down"));
+        assertTrue(text.contains("I'll note this down for you haiz"));
         assertTrue(text.contains("already done"));
-        assertTrue(text.contains("corrupted"));
-        assertTrue(text.contains("couldn't load"));
+        assertTrue(text.contains("Stop scamming me >:("));
+        assertTrue(text.contains("Thanks for reminding me of your laziness..."));
+        assertTrue(text.contains("Man got hacked ggwp"));
+        assertTrue(text.contains("Hands can't save you from load failure zzz"));
     }
 
     @Test
