@@ -38,6 +38,8 @@ public class MainWindow extends Application {
     private static final int MESSAGE_VERTICAL_PADDING = 9;
     private static final int MESSAGE_CORNER_RADIUS = 12;
     private static final int MESSAGE_MAX_WIDTH = 560;
+    private static final int HEADER_IMAGE_SIZE = 54;
+    private static final int INTRODUCTION_IMAGE_WIDTH = 180;
     private static final int AVATAR_SIZE = 44;
     private static final int AVATAR_RADIUS = AVATAR_SIZE / 2;
     private static final String USER_COLOR = "#2563eb";
@@ -75,6 +77,7 @@ public class MainWindow extends Application {
 
         StackPane conversationArea = createConversationArea();
         BorderPane root = new BorderPane();
+        root.setTop(createHeader());
         root.setCenter(conversationArea);
         HBox inputArea = new HBox(10, input, send);
         inputArea.setPadding(new Insets(INPUT_PADDING));
@@ -140,9 +143,37 @@ public class MainWindow extends Application {
     }
 
     private void addWelcomeBanner() {
-        addMessage("YourHand\nYour Mighty Hand that can do a lot of things >:)\n\n"
+        VBox welcome = new VBox(8);
+        welcome.setMaxWidth(MESSAGE_MAX_WIDTH);
+        welcome.setPadding(new Insets(12, 16, 12, 16));
+        welcome.setStyle("-fx-background-color: white; -fx-border-color: #d1d5db;"
+                + " -fx-border-radius: 12px; -fx-background-radius: 12px;");
+
+        ImageView hand = createHandImage(INTRODUCTION_IMAGE_WIDTH);
+        Label title = new Label("YourHand");
+        title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #111827;");
+        Label introduction = new Label("Your Mighty Hand that can do a lot of things >:)\n\n"
                 + "Stop wasting my time! >:( Tell me what I can do now!\n\n"
-                + "(psps type help to see what I can do)", false);
+                + "(psps type help to see what I can do)");
+        introduction.setWrapText(true);
+        introduction.setStyle("-fx-text-fill: #1f2937;");
+        welcome.getChildren().addAll(hand, title, introduction);
+        addBotNode(welcome);
+    }
+
+    private HBox createHeader() {
+        ImageView hand = createHandImage(HEADER_IMAGE_SIZE);
+        Label title = new Label("YourHand");
+        title.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #111827;");
+        Label subtitle = new Label("Your mighty hand for keeping life in hand");
+        subtitle.setStyle("-fx-font-size: 12px; -fx-text-fill: #4b5563;");
+        VBox text = new VBox(2, title, subtitle);
+        HBox header = new HBox(12, hand, text);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setPadding(new Insets(9, 15, 9, 15));
+        header.setStyle("-fx-background-color: rgba(255, 255, 255, 0.94);"
+                + " -fx-border-color: #d1d5db; -fx-border-width: 0 0 1 0;");
+        return header;
     }
 
     private StackPane createConversationArea() {
@@ -231,6 +262,8 @@ public class MainWindow extends Application {
     private void addHelpResponse() {
         VBox card = createResponseCard("YourHand at your service");
 
+        card.getChildren().add(createHandImage(INTRODUCTION_IMAGE_WIDTH));
+
         Label introduction = new Label("Here is what I can help you keep in hand:");
         introduction.setWrapText(true);
         introduction.setStyle("-fx-font-size: 14px; -fx-text-fill: #374151;");
@@ -272,8 +305,17 @@ public class MainWindow extends Application {
         reaction.setPreserveRatio(true);
         reaction.setFitWidth(210);
         reaction.setSmooth(true);
-        errorResponse.getChildren().addAll(errorMessage, reaction);
+        errorResponse.getChildren().addAll(reaction, errorMessage);
         addBotNode(errorResponse);
+    }
+
+    private ImageView createHandImage(double width) {
+        ImageView hand = new ImageView(new Image(
+                getClass().getResource("/images/master-hand.jpg").toExternalForm()));
+        hand.setPreserveRatio(true);
+        hand.setFitWidth(width);
+        hand.setSmooth(true);
+        return hand;
     }
 
     private VBox createHelpCard(String syntax, String description, String color) {

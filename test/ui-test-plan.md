@@ -6,6 +6,24 @@ before-each-command: if exist data\yourhand.txt del /q data\yourhand.txt
 working-directory: ..
 timeout-seconds: 10
 
+## Manual GUI check: YourHand introduction layout
+
+### Aim
+
+Confirm that the JavaFX interface shows `YourHand` as a header, includes the hand image in the introduction/help card, and places the invalid-command reaction image above its error text.
+
+### Input
+
+```text
+Launch the JavaFX application, then enter an invalid command such as `hello` and enter `help`.
+```
+
+### Expected output
+
+```text
+The header shows the hand image and `YourHand`. The opening introduction and the help card show the hand image inside the response card. For `hello`, the reaction image appears above the invalid-command text.
+```
+
 ## Test case: Reject an empty to-do and unknown command
 
 ### Aim
