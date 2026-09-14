@@ -57,7 +57,35 @@ public class Ui {
 
     /** Displays the farewell message. */
     public void showGoodbyeMessage() {
-        output.println(" See you never :)");
+        output.println(" See you later. Keep things in hand!");
+    }
+
+    /** Displays the commands supported by YourHand. */
+    public void showHelp() {
+        output.println(" Here is what I can help you keep in hand:");
+        output.println(" todo DESCRIPTION");
+        output.println("   Add something you need to do.");
+        output.println(" deadline DESCRIPTION /by DATE_OR_TIME");
+        output.println("   Add something with a due date or time.");
+        output.println(" event DESCRIPTION /from DATE_OR_TIME /to DATE_OR_TIME");
+        output.println("   Add something happening over a period of time.");
+        output.println(" list");
+        output.println("   Show all your tasks.");
+        output.println(" find KEYWORD");
+        output.println("   Search your tasks.");
+        output.println(" view schedule DATE");
+        output.println("   Show deadlines and events for a date.");
+        output.println(" mark NUMBER");
+        output.println("   Mark a task as done.");
+        output.println(" unmark NUMBER");
+        output.println("   Put a completed task back on your plate.");
+        output.println(" delete NUMBER");
+        output.println("   Remove a task.");
+        output.println(" help");
+        output.println("   Show this command guide.");
+        output.println(" bye");
+        output.println("   Let me rest my fingers.");
+        output.println(" Try a command whenever you're ready!");
     }
 
     /** Displays an error message caused by a user command. */

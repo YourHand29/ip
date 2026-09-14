@@ -38,6 +38,8 @@ public class MainWindow extends Application {
     private static final int MESSAGE_VERTICAL_PADDING = 9;
     private static final int MESSAGE_CORNER_RADIUS = 12;
     private static final int MESSAGE_MAX_WIDTH = 560;
+    private static final int HEADER_IMAGE_SIZE = 54;
+    private static final int INTRODUCTION_IMAGE_WIDTH = 180;
     private static final int AVATAR_SIZE = 44;
     private static final int AVATAR_RADIUS = AVATAR_SIZE / 2;
     private static final String USER_COLOR = "#2563eb";
@@ -61,7 +63,7 @@ public class MainWindow extends Application {
         conversation.viewportBoundsProperty()
                 .addListener((observable, oldBounds, newBounds) -> scrollToBottom());
 
-        input.setPromptText("Enter a command, e.g. find book");
+        input.setPromptText("Type a command, or type help");
         input.setStyle("-fx-font-size: 14px; -fx-padding: " + MESSAGE_VERTICAL_PADDING + "px;");
         Button send = new Button("Send");
         send.setDefaultButton(true);
@@ -75,6 +77,7 @@ public class MainWindow extends Application {
 
         StackPane conversationArea = createConversationArea();
         BorderPane root = new BorderPane();
+        root.setTop(createHeader());
         root.setCenter(conversationArea);
         HBox inputArea = new HBox(10, input, send);
         inputArea.setPadding(new Insets(INPUT_PADDING));
@@ -104,6 +107,8 @@ public class MainWindow extends Application {
         try {
             if (command.equalsIgnoreCase("list")) {
                 addStructuredResponse("Your tasks", engine.getTaskList().getTasks());
+            } else if (command.equalsIgnoreCase("help")) {
+                addHelpResponse();
             } else if (command.toLowerCase().startsWith("view schedule ")) {
                 String dateText = command.substring("view schedule ".length()).trim();
                 LocalDate date = YourHand.parseTaskDateTime(dateText).getValue().toLocalDate();
@@ -122,6 +127,8 @@ public class MainWindow extends Application {
                 addSingleTaskResponse("Task updated", getTask(taskNumber), taskNumber);
             } else if (taskToDelete != null && !isErrorMessage(response)) {
                 addSingleTaskResponse("Task deleted", taskToDelete, 0);
+            } else if (isErrorMessage(response)) {
+                addInvalidCommandResponse(response);
             } else {
                 addMessage(response, false);
             }
@@ -136,8 +143,37 @@ public class MainWindow extends Application {
     }
 
     private void addWelcomeBanner() {
-        addMessage("YourHand\nYour personal task assistant\n\n"
-                + "Try: todo read book  |  list  |  view schedule 2026-09-10", false);
+        VBox welcome = new VBox(8);
+        welcome.setMaxWidth(MESSAGE_MAX_WIDTH);
+        welcome.setPadding(new Insets(12, 16, 12, 16));
+        welcome.setStyle("-fx-background-color: white; -fx-border-color: #d1d5db;"
+                + " -fx-border-radius: 12px; -fx-background-radius: 12px;");
+
+        ImageView hand = createHandImage(INTRODUCTION_IMAGE_WIDTH);
+        Label title = new Label("YourHand");
+        title.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #111827;");
+        Label introduction = new Label("Your Mighty Hand that can do a lot of things >:)\n\n"
+                + "Stop wasting my time! >:( Tell me what I can do now!\n\n"
+                + "(psps type help to see what I can do)");
+        introduction.setWrapText(true);
+        introduction.setStyle("-fx-text-fill: #1f2937;");
+        welcome.getChildren().addAll(hand, title, introduction);
+        addBotNode(welcome);
+    }
+
+    private HBox createHeader() {
+        ImageView hand = createHandImage(HEADER_IMAGE_SIZE);
+        Label title = new Label("YourHand");
+        title.setStyle("-fx-font-size: 22px; -fx-font-weight: bold; -fx-text-fill: #111827;");
+        Label subtitle = new Label("Your mighty hand for keeping life in hand");
+        subtitle.setStyle("-fx-font-size: 12px; -fx-text-fill: #4b5563;");
+        VBox text = new VBox(2, title, subtitle);
+        HBox header = new HBox(12, hand, text);
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setPadding(new Insets(9, 15, 9, 15));
+        header.setStyle("-fx-background-color: rgba(255, 255, 255, 0.94);"
+                + " -fx-border-color: #d1d5db; -fx-border-width: 0 0 1 0;");
+        return header;
     }
 
     private StackPane createConversationArea() {
@@ -221,6 +257,82 @@ public class MainWindow extends Application {
         VBox card = createResponseCard(heading);
         card.getChildren().add(createTaskCard(task, taskNumber));
         addBotNode(card);
+    }
+
+    private void addHelpResponse() {
+        VBox card = createResponseCard("YourHand at your service");
+
+        card.getChildren().add(createHandImage(INTRODUCTION_IMAGE_WIDTH));
+
+        Label introduction = new Label("Here is what I can help you keep in hand:");
+        introduction.setWrapText(true);
+        introduction.setStyle("-fx-font-size: 14px; -fx-text-fill: #374151;");
+        card.getChildren().add(introduction);
+
+        String[][] commands = {
+            {"todo DESCRIPTION", "Add something you need to do.", "#2563eb"},
+            {"deadline DESCRIPTION /by DATE_OR_TIME", "Add something with a due date or time.", "#d97706"},
+            {"event DESCRIPTION /from DATE_OR_TIME /to DATE_OR_TIME",
+                "Add something happening over a period of time.", "#0891b2"},
+            {"list", "Show all your tasks.", "#2563eb"},
+            {"find KEYWORD", "Search your tasks.", "#2563eb"},
+            {"view schedule DATE", "Show deadlines and events for a date.", "#0891b2"},
+            {"mark NUMBER", "Mark a task as done.", "#16a34a"},
+            {"unmark NUMBER", "Put a completed task back on your plate.", "#16a34a"},
+            {"delete NUMBER", "Remove a task.", "#dc2626"},
+            {"help", "Show this command guide.", "#7c3aed"},
+            {"bye", "Let me rest my fingers.", "#6b7280"}
+        };
+        for (String[] command : commands) {
+            card.getChildren().add(createHelpCard(command[0], command[1], command[2]));
+        }
+        addBotNode(card);
+    }
+
+    private void addInvalidCommandResponse(String response) {
+        VBox errorResponse = new VBox(8);
+        errorResponse.setMaxWidth(MESSAGE_MAX_WIDTH);
+        errorResponse.setPadding(new Insets(10, 12, 10, 12));
+        errorResponse.setStyle("-fx-background-color: #fee2e2; -fx-border-color: #fca5a5;"
+                + " -fx-border-radius: 12px; -fx-background-radius: 12px;");
+
+        Label errorMessage = new Label(response.trim());
+        errorMessage.setWrapText(true);
+        errorMessage.setStyle("-fx-text-fill: " + ERROR_COLOR + ";");
+
+        ImageView reaction = new ImageView(
+                new Image(getClass().getResource("/images/invalid-command.png").toExternalForm()));
+        reaction.setPreserveRatio(true);
+        reaction.setFitWidth(210);
+        reaction.setSmooth(true);
+        errorResponse.getChildren().addAll(reaction, errorMessage);
+        addBotNode(errorResponse);
+    }
+
+    private ImageView createHandImage(double width) {
+        ImageView hand = new ImageView(new Image(
+                getClass().getResource("/images/master-hand.jpg").toExternalForm()));
+        hand.setPreserveRatio(true);
+        hand.setFitWidth(width);
+        hand.setSmooth(true);
+        return hand;
+    }
+
+    private VBox createHelpCard(String syntax, String description, String color) {
+        VBox commandCard = new VBox(3);
+        commandCard.setPadding(new Insets(10, 12, 10, 12));
+        commandCard.setMaxWidth(MESSAGE_MAX_WIDTH);
+        commandCard.setStyle("-fx-background-color: #f8fafc; -fx-border-color: " + color
+                + "; -fx-border-width: 0 0 0 4px; -fx-background-radius: 7px;");
+
+        Label commandLabel = new Label(syntax);
+        commandLabel.setWrapText(true);
+        commandLabel.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: " + color + ";");
+        Label descriptionLabel = new Label(description);
+        descriptionLabel.setWrapText(true);
+        descriptionLabel.setStyle("-fx-font-size: 12px; -fx-text-fill: #4b5563;");
+        commandCard.getChildren().addAll(commandLabel, descriptionLabel);
+        return commandCard;
     }
 
     private boolean isTaskCreationCommand(String command) {
@@ -338,11 +450,21 @@ public class MainWindow extends Application {
 
     private boolean isErrorMessage(String text) {
         return text.contains("I don't speak")
+                || text.contains("You handed")
                 || text.contains("Bro due")
+                || text.contains("Walao")
+                || text.contains("Don't make me guess")
+                || text.contains("needs a")
                 || text.contains("Your task number")
+                || text.contains("Task numbers")
+                || text.contains("Brother I free")
+                || text.contains("Pick a task number")
                 || text.contains("Tell me which")
+                || text.contains("Tell me what")
                 || text.contains("Use yyyy")
+                || text.contains("Please don't use")
                 || text.contains("cannot end")
+                || text.contains("couldn't save")
                 || text.contains("must be");
     }
 

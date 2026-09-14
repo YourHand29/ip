@@ -46,6 +46,18 @@ class YourHandEngineTest {
     }
 
     @Test
+    public void execute_help_returnsCommandGuide() {
+        YourHandEngine engine = createEngine();
+
+        String response = engine.execute("help");
+
+        assertTrue(response.contains("what I can help you keep in hand"));
+        assertTrue(response.contains("todo DESCRIPTION"));
+        assertTrue(response.contains("view schedule DATE"));
+        assertTrue(response.contains("bye"));
+    }
+
+    @Test
     public void execute_viewSchedule_returnsTasksForDate() {
         YourHandEngine engine = createEngine();
         engine.execute("deadline submit report /by 2026-09-10");
