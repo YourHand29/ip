@@ -21,8 +21,11 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.stage.Stage;
 
+import java.net.URL;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import yourhand.exceptions.YourHandException;
 import yourhand.tasks.Deadline;
@@ -31,6 +34,7 @@ import yourhand.tasks.Task;
 
 /** Provides the graphical interface for YourHand. */
 public class MainWindow extends Application {
+    private static final Logger LOGGER = Logger.getLogger(MainWindow.class.getName());
     private static final int MESSAGE_SPACING = 10;
     private static final int CONTENT_PADDING = 15;
     private static final int INPUT_PADDING = 10;
@@ -97,8 +101,8 @@ public class MainWindow extends Application {
     }
 
     private void submitCommand() {
-        String command = input.getText().trim();
-        if (command.isBlank()) {
+        String command = input.getText();
+        if (command == null || command.isBlank()) {
             return;
         }
         addMessage(command, true);
@@ -134,6 +138,9 @@ public class MainWindow extends Application {
             }
         } catch (YourHandException exception) {
             addMessage(response, false);
+        } catch (RuntimeException exception) {
+            LOGGER.log(Level.WARNING, "Unable to render a command response", exception);
+            addInvalidCommandResponse("I couldn't display that response. Please try again.");
         }
         input.clear();
         scrollToBottom();
@@ -177,21 +184,26 @@ public class MainWindow extends Application {
     }
 
     private StackPane createConversationArea() {
-        Image image = new Image(getClass().getResource("/images/kyogre-background.png").toExternalForm());
-        ImageView background = new ImageView(image);
-        background.setPreserveRatio(false);
-        background.setOpacity(0.55);
         Region readabilityOverlay = new Region();
         readabilityOverlay.setStyle("-fx-background-color: rgba(240, 249, 255, 0.55);");
         readabilityOverlay.setMouseTransparent(true);
 
-        StackPane area = new StackPane(background, readabilityOverlay, conversation);
+        Image image = loadImage("/images/kyogre-background.png");
+        StackPane area;
+        if (image == null) {
+            area = new StackPane(readabilityOverlay, conversation);
+        } else {
+            ImageView background = new ImageView(image);
+            background.setPreserveRatio(false);
+            background.setOpacity(0.55);
+            area = new StackPane(background, readabilityOverlay, conversation);
+            background.fitWidthProperty().bind(area.widthProperty());
+            background.fitHeightProperty().bind(area.heightProperty());
+        }
         area.setMinSize(0, 0);
         area.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
         conversation.setMinSize(0, 0);
         conversation.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-        background.fitWidthProperty().bind(area.widthProperty());
-        background.fitHeightProperty().bind(area.heightProperty());
         return area;
     }
 
@@ -300,18 +312,24 @@ public class MainWindow extends Application {
         errorMessage.setWrapText(true);
         errorMessage.setStyle("-fx-text-fill: " + ERROR_COLOR + ";");
 
-        ImageView reaction = new ImageView(
-                new Image(getClass().getResource("/images/invalid-command.png").toExternalForm()));
-        reaction.setPreserveRatio(true);
-        reaction.setFitWidth(210);
-        reaction.setSmooth(true);
-        errorResponse.getChildren().addAll(reaction, errorMessage);
+        Image reactionImage = loadImage("/images/invalid-command.png");
+        if (reactionImage != null) {
+            ImageView reaction = new ImageView(reactionImage);
+            reaction.setPreserveRatio(true);
+            reaction.setFitWidth(210);
+            reaction.setSmooth(true);
+            errorResponse.getChildren().add(reaction);
+        }
+        errorResponse.getChildren().add(errorMessage);
         addBotNode(errorResponse);
     }
 
     private ImageView createHandImage(double width) {
-        ImageView hand = new ImageView(new Image(
-                getClass().getResource("/images/master-hand.jpg").toExternalForm()));
+        ImageView hand = new ImageView();
+        Image image = loadImage("/images/master-hand.jpg");
+        if (image != null) {
+            hand.setImage(image);
+        }
         hand.setPreserveRatio(true);
         hand.setFitWidth(width);
         hand.setSmooth(true);
@@ -449,6 +467,9 @@ public class MainWindow extends Application {
     }
 
     private boolean isErrorMessage(String text) {
+        if (text == null) {
+            return true;
+        }
         return text.contains("I don't speak")
                 || text.contains("You handed")
                 || text.contains("Bro due")
@@ -463,6 +484,12 @@ public class MainWindow extends Application {
                 || text.contains("Tell me what")
                 || text.contains("Use yyyy")
                 || text.contains("Please don't use")
+                || text.contains("Please remove")
+                || text.contains("Please enter")
+                || text.contains("control characters")
+                || text.contains("couldn't complete")
+                || text.contains("couldn't display")
+                || text.contains("must end after")
                 || text.contains("cannot end")
                 || text.contains("couldn't save")
                 || text.contains("must be");
@@ -476,11 +503,30 @@ public class MainWindow extends Application {
 
     private Node createAvatar(boolean fromUser) {
         String imagePath = fromUser ? "/images/user-avatar.jpg" : "/images/chatbot-hand.jpg";
-        ImageView avatar = new ImageView(new Image(getClass().getResource(imagePath).toExternalForm()));
+        ImageView avatar = new ImageView();
+        Image image = loadImage(imagePath);
+        if (image != null) {
+            avatar.setImage(image);
+        }
         avatar.setFitWidth(AVATAR_SIZE);
         avatar.setFitHeight(AVATAR_SIZE);
         avatar.setPreserveRatio(false);
         avatar.setClip(new Circle(AVATAR_RADIUS, AVATAR_RADIUS, AVATAR_RADIUS));
         return avatar;
+    }
+
+    /** Loads an optional UI image without preventing the application from starting. */
+    private Image loadImage(String resourcePath) {
+        URL resource = getClass().getResource(resourcePath);
+        if (resource == null) {
+            LOGGER.warning("UI image is missing: " + resourcePath);
+            return null;
+        }
+        try {
+            return new Image(resource.toExternalForm());
+        } catch (RuntimeException exception) {
+            LOGGER.log(Level.WARNING, "UI image could not be loaded: " + resourcePath, exception);
+            return null;
+        }
     }
 }

@@ -22,8 +22,18 @@ public class TaskList {
      * @param task Task to store.
      */
     public void add(Task task) {
-        assert task != null : "task list must not contain null tasks";
+        if (task == null) {
+            throw new IllegalArgumentException("task list must not contain null tasks");
+        }
         tasks.add(task);
+    }
+
+    /** Adds a task at a zero-based position, for transactional command rollback. */
+    public void addAt(int index, Task task) {
+        if (task == null || index < 0 || index > tasks.size()) {
+            throw new IllegalArgumentException("Invalid task insertion.");
+        }
+        tasks.add(index, task);
     }
 
     /**

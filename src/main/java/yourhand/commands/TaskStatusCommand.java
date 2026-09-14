@@ -23,7 +23,16 @@ public class TaskStatusCommand extends Command {
         Task task = taskList.getTask(taskNumber);
         boolean wasUpdated = isMarkCommand ? task.markAsDone() : task.markAsUndone();
         if (wasUpdated) {
-            saveTasks(taskList, storage);
+            try {
+                saveTasks(taskList, storage);
+            } catch (YourHandException exception) {
+                if (isMarkCommand) {
+                    task.markAsUndone();
+                } else {
+                    task.markAsDone();
+                }
+                throw exception;
+            }
         }
         ui.showTaskStatus(task, isMarkCommand, wasUpdated);
     }

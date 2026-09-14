@@ -21,7 +21,9 @@ public class TaskDateTime {
      * @param date Date value.
      */
     public TaskDateTime(LocalDate date) {
-        assert date != null : "date value must be provided";
+        if (date == null) {
+            throw new IllegalArgumentException("date value must be provided");
+        }
         this.value = date.atStartOfDay();
         this.hasTime = false;
     }
@@ -32,7 +34,9 @@ public class TaskDateTime {
      * @param value Date and time value.
      */
     public TaskDateTime(LocalDateTime value) {
-        assert value != null : "date-time value must be provided";
+        if (value == null) {
+            throw new IllegalArgumentException("date-time value must be provided");
+        }
         this.value = value;
         this.hasTime = true;
     }

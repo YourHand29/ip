@@ -45,9 +45,9 @@ public class Ui {
         return scanner.hasNextLine();
     }
 
-    /** Reads and trims the next user command. */
+    /** Reads the next user command without changing it, so format errors can be explained. */
     public String readCommand() {
-        return scanner.nextLine().trim();
+        return scanner.nextLine();
     }
 
     /** Displays the separator used around command responses. */

@@ -77,6 +77,42 @@ class YourHandEngineTest {
         assertTrue(response.contains("which date to view"));
     }
 
+    @Test
+    public void execute_leadingSpace_returnsFormatError() {
+        YourHandEngine engine = createEngine();
+
+        String response = engine.execute(" todo read book");
+
+        assertTrue(response.contains("remove spaces before or after"));
+    }
+
+    @Test
+    public void execute_multipleSpaces_returnsFormatError() {
+        YourHandEngine engine = createEngine();
+
+        String response = engine.execute("todo  read book");
+
+        assertTrue(response.contains("only one space"));
+    }
+
+    @Test
+    public void execute_equalEventDates_returnsHelpfulError() {
+        YourHandEngine engine = createEngine();
+
+        String response = engine.execute("event meeting /from 2026-09-10 /to 2026-09-10");
+
+        assertTrue(response.contains("must end after it starts"));
+    }
+
+    @Test
+    public void execute_invalidDate_returnsHelpfulError() {
+        YourHandEngine engine = createEngine();
+
+        String response = engine.execute("deadline report /by 2026-02-30");
+
+        assertTrue(response.contains("Use yyyy-M-d"));
+    }
+
     private YourHandEngine createEngine() {
         Path testFile = Path.of("build", "test-data", "engine-test.txt");
         try {

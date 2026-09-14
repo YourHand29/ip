@@ -15,6 +15,15 @@ public abstract class Task {
      * @param taskType Category of the task.
      */
     protected Task(String description, TaskType taskType) {
+        if (description == null || description.isBlank()) {
+            throw new IllegalArgumentException("Task description must not be empty.");
+        }
+        if (description.indexOf('|') >= 0 || description.chars().anyMatch(Character::isISOControl)) {
+            throw new IllegalArgumentException("Task description contains an unsupported character.");
+        }
+        if (taskType == null) {
+            throw new IllegalArgumentException("Task type must be provided.");
+        }
         this.description = description;
         this.taskType = taskType;
         this.isDone = false;

@@ -89,6 +89,7 @@ public class YourHand {
      * @throws YourHandException if the command is invalid
      */
     static Command parseCommand(String command) throws YourHandException {
+        validateCommand(command);
         if (command.equals("help")) {
             return new HelpCommand();
         }
@@ -127,6 +128,25 @@ public class YourHand {
         }
 
         return new AddTaskCommand(createTask(command));
+    }
+
+    /** Rejects command text that cannot be parsed reliably or stored safely. */
+    private static void validateCommand(String command) throws YourHandException {
+        if (command == null || command.isBlank()) {
+            throw new YourHandException("Please enter a command. Try help to see what I can do.");
+        }
+        if (!command.equals(command.strip())) {
+            throw new YourHandException("Please remove spaces before or after your command.");
+        }
+        if (command.matches(".*\\s{2,}.*")) {
+            throw new YourHandException("Please use only one space between command parts.");
+        }
+        if (command.chars().anyMatch(Character::isISOControl)) {
+            throw new YourHandException("Please remove control characters from your command.");
+        }
+        if (command.indexOf('|') >= 0) {
+            throw new YourHandException("Please don't use | in a command. It is reserved for saved data.");
+        }
     }
 
     /** Updates a task's completion status from a validated mark or unmark command. */
@@ -196,8 +216,8 @@ public class YourHand {
                     validateTaskText(
                             eventMatcher.group(3),
                             "Your event needs an end date."));
-            if (to.getValue().isBefore(from.getValue())) {
-                throw new YourHandException("Your event cannot end before it starts.");
+            if (!to.getValue().isAfter(from.getValue())) {
+                throw new YourHandException("Your event must end after it starts.");
             }
             return new Event(description, from, to);
         }
@@ -231,13 +251,19 @@ public class YourHand {
         if (trimmedText.contains("|")) {
             throw new YourHandException("Please don't use | in a task. I need it to save your data safely.");
         }
+        if (trimmedText.chars().anyMatch(Character::isISOControl)) {
+            throw new YourHandException("Please don't use control characters in a task.");
+        }
         return trimmedText;
     }
 
     /** Parses a supported task date or date-time and presents parse errors as chatbot errors. */
     static TaskDateTime parseTaskDateTime(String dateText) throws YourHandException {
+        if (dateText == null || dateText.isBlank()) {
+            throw new YourHandException("A date or time is required.");
+        }
         try {
-            return new TaskDateTime(LocalDate.parse(dateText, ISO_DATE_FORMAT));
+            return new TaskDateTime(LocalDate.parse(dateText.trim(), ISO_DATE_FORMAT));
         } catch (DateTimeParseException exception) {
             return parseTaskDateTimeWithTime(dateText);
         }
