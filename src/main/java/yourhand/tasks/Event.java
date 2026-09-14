@@ -16,6 +16,12 @@ public class Event extends Task {
      */
     public Event(String description, TaskDateTime from, TaskDateTime to) {
         super(description, TaskType.EVENT);
+        if (from == null || to == null) {
+            throw new IllegalArgumentException("An event must have a start and end date.");
+        }
+        if (!to.getValue().isAfter(from.getValue())) {
+            throw new IllegalArgumentException("An event must end after it starts.");
+        }
         this.from = from;
         this.to = to;
     }

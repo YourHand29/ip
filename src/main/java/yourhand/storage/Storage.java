@@ -11,12 +11,16 @@ import yourhand.tasks.Todo;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Saves and loads YourHand task data from a file.
@@ -36,7 +40,7 @@ public class Storage {
      * @param filePath Location of the task data file.
      */
     public Storage(Path filePath) {
-        this.filePath = filePath;
+        this.filePath = Objects.requireNonNull(filePath, "file path must be provided");
     }
 
     /**
@@ -46,11 +50,29 @@ public class Storage {
      * @throws IOException If the data directory or file cannot be written.
      */
     public void save(TaskList taskList) throws IOException {
-        Files.createDirectories(filePath.getParent());
+        Objects.requireNonNull(taskList, "task list must be provided");
+        Path parent = filePath.getParent();
+        if (parent != null) {
+            Files.createDirectories(parent);
+        }
         List<String> taskLines = new ArrayList<>(taskList.getTasks().stream()
                 .map(Task::toFileString)
                 .toList());
-        Files.write(filePath, taskLines, StandardCharsets.UTF_8);
+        Path temporaryFile = Files.createTempFile(parent == null ? Path.of(".") : parent,
+                filePath.getFileName().toString(), ".tmp");
+        try {
+            Files.write(temporaryFile, taskLines, StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE, StandardOpenOption.WRITE,
+                    StandardOpenOption.TRUNCATE_EXISTING);
+            try {
+                Files.move(temporaryFile, filePath, StandardCopyOption.ATOMIC_MOVE,
+                        StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException exception) {
+                Files.move(temporaryFile, filePath, StandardCopyOption.REPLACE_EXISTING);
+            }
+        } finally {
+            Files.deleteIfExists(temporaryFile);
+        }
     }
 
     /**
@@ -72,7 +94,7 @@ public class Storage {
             }
             try {
                 taskList.add(parseTask(taskLine));
-            } catch (IllegalArgumentException exception) {
+            } catch (IllegalArgumentException | IndexOutOfBoundsException exception) {
                 throw new CorruptFileException("A saved task entry is malformed.", exception);
             }
         }
@@ -115,8 +137,8 @@ public class Storage {
     private Event parseEvent(String[] fields) {
         TaskDateTime from = parseTaskDateTime(fields[3]);
         TaskDateTime to = parseTaskDateTime(fields[4]);
-        if (to.getValue().isBefore(from.getValue())) {
-            throw new IllegalArgumentException("Saved event cannot end before it starts.");
+        if (!to.getValue().isAfter(from.getValue())) {
+            throw new IllegalArgumentException("Saved event must end after it starts.");
         }
         return new Event(fields[2], from, to);
     }

@@ -22,8 +22,14 @@ public class AddTaskCommand extends Command {
         if (existingTaskNumber != -1) {
             ui.showDuplicateTaskWarning(existingTaskNumber);
         }
+        int taskNumber = taskList.size();
         taskList.add(task);
-        saveTasks(taskList, storage);
+        try {
+            saveTasks(taskList, storage);
+        } catch (YourHandException exception) {
+            taskList.removeTask(taskNumber + 1);
+            throw exception;
+        }
         ui.showTaskAdded(task, taskList.size());
     }
 }

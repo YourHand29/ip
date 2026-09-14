@@ -19,7 +19,12 @@ public class DeleteCommand extends Command {
     @Override
     public void execute(TaskList taskList, Ui ui, Storage storage) throws YourHandException {
         Task removedTask = taskList.removeTask(taskNumber);
-        saveTasks(taskList, storage);
+        try {
+            saveTasks(taskList, storage);
+        } catch (YourHandException exception) {
+            taskList.addAt(taskNumber - 1, removedTask);
+            throw exception;
+        }
         ui.showTaskDeleted(removedTask, taskList.size());
     }
 }
