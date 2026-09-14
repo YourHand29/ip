@@ -95,7 +95,7 @@ public class Storage {
             try {
                 taskList.add(parseTask(taskLine));
             } catch (IllegalArgumentException | IndexOutOfBoundsException exception) {
-                throw new CorruptFileException("A saved task entry is malformed.", exception);
+                throw new CorruptFileException(exception);
             }
         }
         return taskList;

@@ -97,6 +97,9 @@ public class MainWindow extends Application {
         stage.show();
         conversation.lookup(".viewport").setStyle("-fx-background-color: transparent;");
         addWelcomeBanner();
+        if (engine.hasStartupWarning()) {
+            addInvalidCommandResponse("Man got hacked ggwp");
+        }
         scrollToBottom();
     }
 
@@ -107,9 +110,12 @@ public class MainWindow extends Application {
         }
         addMessage(command, true);
         Task taskToDelete = getTaskBeforeDeletion(command);
-        String response = engine.execute(command);
+        ExecutionResult execution = engine.executeWithResult(command);
+        String response = execution.message();
         try {
-            if (command.equalsIgnoreCase("list")) {
+            if (!execution.successful()) {
+                addInvalidCommandResponse(response);
+            } else if (command.equalsIgnoreCase("list")) {
                 addStructuredResponse("Your tasks", engine.getTaskList().getTasks());
             } else if (command.equalsIgnoreCase("help")) {
                 addHelpResponse();
@@ -118,26 +124,24 @@ public class MainWindow extends Application {
                 LocalDate date = YourHand.parseTaskDateTime(dateText).getValue().toLocalDate();
                 List<Integer> taskNumbers = engine.getTaskList().findTaskNumbersForDate(date);
                 addTaskNumbersResponse("Schedule for " + date, taskNumbers);
-            } else if (command.toLowerCase().startsWith("find ") && !isErrorMessage(response)) {
+            } else if (command.toLowerCase().startsWith("find ")) {
                 String keyword = command.substring("find ".length()).trim();
                 List<Integer> taskNumbers = engine.getTaskList()
                         .findTaskNumbersByDescriptionKeyword(keyword);
                 addTaskNumbersResponse("Matching tasks", taskNumbers);
-            } else if (isTaskCreationCommand(command) && !isErrorMessage(response)) {
+            } else if (isTaskCreationCommand(command)) {
                 List<Task> tasks = engine.getTaskList().getTasks();
                 addSingleTaskResponse("Task added", tasks.get(tasks.size() - 1), tasks.size());
-            } else if (isTaskStatusCommand(command) && !isErrorMessage(response)) {
+            } else if (isTaskStatusCommand(command)) {
                 int taskNumber = Integer.parseInt(command.substring(command.lastIndexOf(' ') + 1));
                 addSingleTaskResponse("Task updated", getTask(taskNumber), taskNumber);
-            } else if (taskToDelete != null && !isErrorMessage(response)) {
+            } else if (taskToDelete != null) {
                 addSingleTaskResponse("Task deleted", taskToDelete, 0);
-            } else if (isErrorMessage(response)) {
-                addInvalidCommandResponse(response);
             } else {
                 addMessage(response, false);
             }
         } catch (YourHandException exception) {
-            addMessage(response, false);
+            addInvalidCommandResponse(response);
         } catch (RuntimeException exception) {
             LOGGER.log(Level.WARNING, "Unable to render a command response", exception);
             addInvalidCommandResponse("I couldn't display that response. Please try again.");

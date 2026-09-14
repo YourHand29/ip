@@ -1,5 +1,6 @@
 package yourhand.commands;
 
+import yourhand.exceptions.StorageException;
 import yourhand.exceptions.YourHandException;
 import yourhand.storage.Storage;
 import yourhand.tasks.TaskList;
@@ -24,7 +25,7 @@ public abstract class Command {
         try {
             storage.save(taskList);
         } catch (IOException | SecurityException exception) {
-            throw new YourHandException("I couldn't save your tasks. Please check the data folder.");
+            throw new StorageException();
         }
     }
 }

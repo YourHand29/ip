@@ -46,6 +46,46 @@ class YourHandEngineTest {
     }
 
     @Test
+    public void executeWithResult_invalidCommand_reportsFailure() {
+        YourHandEngine engine = createEngine();
+
+        ExecutionResult result = engine.executeWithResult("todo  read book");
+
+        assertFalse(result.successful());
+        assertTrue(result.message().contains("only one space"));
+    }
+
+    @Test
+    public void executeWithResult_validCommand_reportsSuccess() {
+        YourHandEngine engine = createEngine();
+
+        ExecutionResult result = engine.executeWithResult("todo read book");
+
+        assertTrue(result.successful());
+        assertTrue(result.message().contains("written this down"));
+    }
+
+    @Test
+    public void executeWithResult_impossibleDate_reportsCalendarError() {
+        YourHandEngine engine = createEngine();
+
+        ExecutionResult result = engine.executeWithResult("deadline report /by 2026-02-30");
+
+        assertFalse(result.successful());
+        assertTrue(result.message().contains("Date [2026-02-30]"));
+    }
+
+    @Test
+    public void executeWithResult_outOfRangeTime_reportsTimeError() {
+        YourHandEngine engine = createEngine();
+
+        ExecutionResult result = engine.executeWithResult("deadline report /by 2026-09-10 25:00");
+
+        assertFalse(result.successful());
+        assertTrue(result.message().contains("Time [25:00]"));
+    }
+
+    @Test
     public void execute_help_returnsCommandGuide() {
         YourHandEngine engine = createEngine();
 
@@ -110,7 +150,7 @@ class YourHandEngineTest {
 
         String response = engine.execute("deadline report /by 2026-02-30");
 
-        assertTrue(response.contains("Use yyyy-M-d"));
+        assertTrue(response.contains("Date [2026-02-30]"));
     }
 
     private YourHandEngine createEngine() {

@@ -10,6 +10,9 @@ import yourhand.commands.ListCommand;
 import yourhand.commands.TaskStatusCommand;
 import yourhand.commands.ViewScheduleCommand;
 import yourhand.exceptions.CorruptFileException;
+import yourhand.exceptions.InvalidCommandException;
+import yourhand.exceptions.InvalidDateException;
+import yourhand.exceptions.InvalidTimeException;
 import yourhand.exceptions.YourHandException;
 import yourhand.storage.Storage;
 import yourhand.tasks.Deadline;
@@ -42,6 +45,9 @@ public class YourHand {
     private static final Pattern DELETE_PATTERN = Pattern.compile("^delete(?:\\s+(.+))?$");
     private static final Pattern FIND_PATTERN = Pattern.compile("^find(?:\\s+(.*))?$");
     private static final Pattern VIEW_SCHEDULE_PATTERN = Pattern.compile("^view schedule(?:\\s+(.+))?$");
+    private static final Pattern ISO_DATE_ONLY_PATTERN = Pattern.compile("^\\d{4}-\\d{1,2}-\\d{1,2}$");
+    private static final Pattern DATE_TIME_PATTERN = Pattern.compile(
+            "^(?:\\d{4}-\\d{1,2}-\\d{1,2}|\\d{1,2}/\\d{1,2}/\\d{4})\\s+.+$");
     private static final DateTimeFormatter ISO_DATE_FORMAT = DateTimeFormatter.ofPattern("uuuu-M-d")
             .withResolverStyle(ResolverStyle.STRICT);
     private static final DateTimeFormatter ISO_COMPACT_DATE_TIME_FORMAT =
@@ -133,19 +139,19 @@ public class YourHand {
     /** Rejects command text that cannot be parsed reliably or stored safely. */
     private static void validateCommand(String command) throws YourHandException {
         if (command == null || command.isBlank()) {
-            throw new YourHandException("Please enter a command. Try help to see what I can do.");
+            throw new InvalidCommandException("Please enter a command. Try help to see what I can do.");
         }
         if (!command.equals(command.strip())) {
-            throw new YourHandException("Please remove spaces before or after your command.");
+            throw new InvalidCommandException("Please remove spaces before or after your command.");
         }
         if (command.matches(".*\\s{2,}.*")) {
-            throw new YourHandException("Please use only one space between command parts.");
+            throw new InvalidCommandException("Please use only one space between command parts.");
         }
         if (command.chars().anyMatch(Character::isISOControl)) {
-            throw new YourHandException("Please remove control characters from your command.");
+            throw new InvalidCommandException("Please remove control characters from your command.");
         }
         if (command.indexOf('|') >= 0) {
-            throw new YourHandException("Please don't use | in a command. It is reserved for saved data.");
+            throw new InvalidCommandException("Please don't use | in a command. It is reserved for saved data.");
         }
     }
 
@@ -262,10 +268,14 @@ public class YourHand {
         if (dateText == null || dateText.isBlank()) {
             throw new YourHandException("A date or time is required.");
         }
+        String trimmedDateText = dateText.trim();
         try {
-            return new TaskDateTime(LocalDate.parse(dateText.trim(), ISO_DATE_FORMAT));
+            return new TaskDateTime(LocalDate.parse(trimmedDateText, ISO_DATE_FORMAT));
         } catch (DateTimeParseException exception) {
-            return parseTaskDateTimeWithTime(dateText);
+            if (ISO_DATE_ONLY_PATTERN.matcher(trimmedDateText).matches()) {
+                throw new InvalidDateException(trimmedDateText);
+            }
+            return parseTaskDateTimeWithTime(trimmedDateText);
         }
     }
 
@@ -281,7 +291,12 @@ public class YourHand {
                 // Try the next documented format.
             }
         }
-        throw new YourHandException("Use yyyy-M-d, yyyy-M-d HHmm, yyyy-M-d HH:mm, or d/M/yyyy HHmm.");
+        if (DATE_TIME_PATTERN.matcher(dateText).matches()) {
+            String timeText = dateText.substring(dateText.indexOf(' ') + 1);
+            throw new InvalidTimeException(timeText);
+        }
+        throw new InvalidCommandException("Date/time [" + dateText + "] is not in a format I understand. "
+                + "Use yyyy-M-d, yyyy-M-d HHmm, yyyy-M-d HH:mm, or d/M/yyyy HHmm.");
     }
 
     /** Loads saved tasks and starts with an empty list if the data file cannot be read. */
